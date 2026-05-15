@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, Upload } from "lucide-react";
+import { ArrowLeft, Loader2, Upload, Plus, X } from "lucide-react";
 import Link from "next/link";
 
 export default function NewProductPage() {
@@ -14,6 +14,11 @@ export default function NewProductPage() {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<any[]>([]);
   const [error, setError] = useState("");
+  
+  const [showCategoryInput, setShowCategoryInput] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   const [form, setForm] = useState({
     name: "",
@@ -29,8 +34,10 @@ export default function NewProductPage() {
 
   useEffect(() => {
     // Fetch categories for the dropdown
-    fetch("/api/products/import")
-      .catch(() => {});
+    fetch("/api/categories")
+      .then((res) => res.json())
+      .then((data) => setCategories(data))
+      .catch((err) => console.error(err));
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -42,13 +49,81 @@ export default function NewProductPage() {
     }));
   };
 
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    try {
+      setCreatingCategory(true);
+      const res = await fetch("/api/categories", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newCategoryName }),
+      });
+      if (res.ok) {
+        const newCat = await res.json();
+        setCategories((prev) => [...prev, newCat].sort((a, b) => a.name.localeCompare(b.name)));
+        setForm((prev) => ({ ...prev, category: newCat._id }));
+        setNewCategoryName("");
+        setShowCategoryInput(false);
+      } else {
+        const data = await res.json();
+        setError(data.error || "Failed to create category");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("An unexpected error occurred while creating category.");
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setForm((prev) => ({
+          ...prev,
+          images: [...prev.images, data.secure_url],
+        }));
+      } else {
+        const errData = await res.json();
+        setError(errData.error || "Failed to upload image");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("An unexpected error occurred during upload.");
+    } finally {
+      setUploadingImage(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setForm((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, index) => index !== indexToRemove),
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
 
     try {
-      const res = await fetch("/api/products/import", {
+      const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -106,9 +181,57 @@ export default function NewProductPage() {
                 <Input name="slug" value={form.slug} onChange={handleChange} placeholder="auto-generated" />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label>SKU *</Label>
-              <Input name="sku" value={form.sku} onChange={handleChange} placeholder="e.g. PLB-001" required />
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>SKU *</Label>
+                <Input name="sku" value={form.sku} onChange={handleChange} placeholder="e.g. PLB-001" required />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Category *</Label>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-6 px-2 text-xs"
+                    onClick={() => setShowCategoryInput(!showCategoryInput)}
+                  >
+                    {showCategoryInput ? <X className="h-3 w-3 mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
+                    {showCategoryInput ? "Cancel" : "Create New"}
+                  </Button>
+                </div>
+                
+                {showCategoryInput ? (
+                  <div className="flex items-center gap-2">
+                    <Input 
+                      placeholder="New category name..." 
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      disabled={creatingCategory}
+                    />
+                    <Button 
+                      type="button" 
+                      onClick={handleCreateCategory} 
+                      disabled={creatingCategory || !newCategoryName.trim()}
+                    >
+                      {creatingCategory ? <Loader2 className="h-4 w-4 animate-spin" /> : "Add"}
+                    </Button>
+                  </div>
+                ) : (
+                  <select
+                    name="category"
+                    value={form.category}
+                    onChange={handleChange}
+                    required
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="" disabled>Select category</option>
+                    {categories.map((cat) => (
+                      <option key={cat._id} value={cat._id}>{cat.name}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>Description *</Label>
@@ -150,16 +273,46 @@ export default function NewProductPage() {
           <CardHeader>
             <CardTitle>Images</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="border-2 border-dashed rounded-xl p-8 text-center space-y-3">
-              <Upload className="h-10 w-10 text-muted-foreground mx-auto" />
-              <p className="text-muted-foreground text-sm">
-                Drag and drop images here, or click to upload
-              </p>
-              <p className="text-xs text-muted-foreground">
-                PNG, JPG, WEBP up to 5MB each
-              </p>
+          <CardContent className="space-y-4">
+            <div className="border-2 border-dashed rounded-xl p-8 text-center space-y-3 relative group">
+              <input 
+                type="file" 
+                accept="image/png, image/jpeg, image/webp" 
+                onChange={handleImageUpload} 
+                disabled={uploadingImage}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10 disabled:cursor-not-allowed"
+              />
+              <div className="flex flex-col items-center justify-center space-y-2">
+                {uploadingImage ? (
+                  <Loader2 className="h-10 w-10 text-blue-600 animate-spin mx-auto" />
+                ) : (
+                  <Upload className="h-10 w-10 text-muted-foreground mx-auto group-hover:text-blue-600 transition-colors" />
+                )}
+                <p className="text-muted-foreground text-sm font-medium">
+                  {uploadingImage ? "Uploading..." : "Drag and drop images here, or click to upload"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  PNG, JPG, WEBP up to 5MB each
+                </p>
+              </div>
             </div>
+
+            {form.images.length > 0 && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                {form.images.map((img, idx) => (
+                  <div key={idx} className="relative group rounded-lg overflow-hidden border aspect-square">
+                    <img src={img} alt={`Product image ${idx + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveImage(idx)}
+                      className="absolute top-2 right-2 bg-black/50 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/70"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 

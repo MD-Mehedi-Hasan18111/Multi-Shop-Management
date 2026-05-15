@@ -91,7 +91,7 @@ export default function CartPage() {
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <h3 className="font-bold text-2xl text-zinc-900 dark:text-zinc-100">{item.name}</h3>
-                      <p className="text-zinc-500 font-medium">${item.price.toFixed(2)} each</p>
+                      <p className="text-zinc-500 font-medium">${item.price?.toFixed(2)} each</p>
                     </div>
                     <p className="font-black text-2xl text-blue-600">${(item.price * item.quantity).toFixed(2)}</p>
                   </div>
@@ -163,7 +163,7 @@ export default function CartPage() {
                     <span className="text-zinc-500 font-medium">Tax</span>
                     <span className="font-bold">${tax.toFixed(2)}</span>
                   </div>
-                  
+
                   {appliedCoupon && (
                     <div className="flex justify-between text-lg p-4 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-900/30">
                       <div className="flex flex-col">
@@ -181,23 +181,23 @@ export default function CartPage() {
                 </div>
 
                 <Separator className="bg-zinc-100 dark:bg-zinc-800" />
-                
+
                 <div className="flex justify-between text-3xl font-black text-zinc-900 dark:text-zinc-100">
                   <span>Total</span>
                   <span>${total.toFixed(2)}</span>
                 </div>
-                
+
                 <div className="space-y-3 pt-4">
                   <Label className="text-sm font-bold text-zinc-500 uppercase tracking-wider">Coupon Code</Label>
                   <div className="flex gap-2">
-                    <Input 
-                      placeholder="Enter code" 
+                    <Input
+                      placeholder="Enter code"
                       className="h-12 rounded-xl bg-zinc-50 dark:bg-zinc-800 border-none focus-visible:ring-2 focus-visible:ring-blue-500"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
                     />
-                    <Button 
-                      variant="secondary" 
+                    <Button
+                      variant="secondary"
                       className="h-12 rounded-xl px-6 font-bold"
                       onClick={applyCoupon}
                       disabled={loading || !couponCode}

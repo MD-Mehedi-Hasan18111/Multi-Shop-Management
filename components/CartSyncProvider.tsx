@@ -17,26 +17,27 @@ export function CartSyncProvider({ children }: { children: React.ReactNode }) {
       fetch("/api/cart")
         .then((res) => res.json())
         .then((data) => {
-          if (data.items && data.items.length > 0) {
+          if (data && data.items) {
             dispatch(setCart(data.items));
           }
-        });
+        })
+        .catch(err => console.error("Error fetching cart:", err));
     }
   }, [session, dispatch]);
 
   // Sync Redux to DB on change
   useEffect(() => {
-    if (session && cartItems.length > 0) {
+    if (session) {
       const timer = setTimeout(() => {
         fetch("/api/cart", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             items: cartItems,
-            total: cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0),
+            total: cartItems.reduce((acc, item) => acc + (item.price || 0) * item.quantity, 0),
           }),
         });
-      }, 2000); // Debounce sync
+      }, 1000); // Debounce sync
       return () => clearTimeout(timer);
     }
   }, [cartItems, session]);

@@ -1,23 +1,66 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { User, Package, Heart, MapPin, LogOut, ShieldCheck, Store } from "lucide-react";
+import { User, Package, Heart, MapPin, LogOut, ShieldCheck, Store, Camera, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function AccountPage() {
-  const { data: session, status } = useSession();
+  const { data: session, status, update } = useSession();
   const router = useRouter();
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login?callbackUrl=/account");
     }
   }, [status, router]);
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploading(true);
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // 1. Upload to Cloudinary
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!uploadRes.ok) throw new Error("Upload failed");
+      const uploadData = await uploadRes.json();
+      const avatarUrl = uploadData.secure_url;
+
+      // 2. Update User Profile
+      const updateRes = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ avatar: avatarUrl }),
+      });
+
+      if (updateRes.ok) {
+        // 3. Update Session
+        await update({ avatar: avatarUrl });
+      } else {
+        const errorData = await updateRes.json();
+        alert(errorData.error || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Avatar change error:", error);
+      alert("An error occurred while updating your avatar");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   if (status === "loading") {
     return (
@@ -48,16 +91,36 @@ export default function AccountPage() {
       {/* Profile Card */}
       <Card className="rounded-3xl border-none shadow-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white overflow-hidden">
         <CardContent className="p-8">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-2xl bg-white/20 flex items-center justify-center text-3xl font-black">
-              {session.user?.name?.[0]?.toUpperCase() || "U"}
+          <div className="flex flex-col sm:flex-row items-center gap-6">
+            <div className="relative group">
+              <div className="w-24 h-24 rounded-2xl bg-white/20 flex items-center justify-center text-3xl font-black overflow-hidden border-2 border-white/30">
+                {uploading ? (
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                ) : (session.user as any)?.avatar ? (
+                  <img src={(session.user as any).avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <span>{session.user?.name?.[0]?.toUpperCase() || "U"}</span>
+                )}
+              </div>
+              <label className="absolute -bottom-2 -right-2 w-10 h-10 bg-white text-blue-600 rounded-xl flex items-center justify-center shadow-lg cursor-pointer hover:scale-110 transition active:scale-95 border-4 border-blue-600">
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  disabled={uploading}
+                />
+                <Camera className="h-5 w-5" />
+              </label>
             </div>
-            <div className="space-y-1">
-              <h2 className="text-2xl font-black">{session.user?.name || "User"}</h2>
-              <p className="text-white/70">{session.user?.email}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <ShieldCheck className="h-4 w-4" />
-                <span className="text-sm capitalize font-medium">{(session.user as any)?.role || "customer"}</span>
+            <div className="space-y-1 text-center sm:text-left">
+              <h2 className="text-3xl font-black">{session.user?.name || "User"}</h2>
+              <p className="text-white/70 font-medium">{session.user?.email}</p>
+              <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                <div className="bg-white/20 px-3 py-1 rounded-full flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span className="text-xs uppercase tracking-wider font-bold">{(session.user as any)?.role || "customer"}</span>
+                </div>
               </div>
             </div>
           </div>

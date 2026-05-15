@@ -42,22 +42,31 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          avatar: user.avatar,
         };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = (user as any).role;
+        token.avatar = (user as any).avatar;
       }
+      
+      // Handle session updates
+      if (trigger === "update" && session?.avatar) {
+        token.avatar = session.avatar;
+      }
+      
       return token;
     },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
+        (session.user as any).role = token.role as string;
+        (session.user as any).avatar = token.avatar as string;
       }
       return session;
     },
