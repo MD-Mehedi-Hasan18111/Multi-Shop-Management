@@ -28,7 +28,7 @@ export default async function ProductsPage() {
   await dbConnect();
   
   // Fetch initial products and categories on the server
-  const productsData = await Product.find({ status: "active" }).sort({ createdAt: -1 }).limit(12).lean();
+  const productsData = await Product.find({ isActive: true }).sort({ createdAt: -1 }).limit(12).populate("category", "name slug").lean();
   const categoriesData = await Category.find({}).lean();
 
   const products = JSON.parse(JSON.stringify(productsData));

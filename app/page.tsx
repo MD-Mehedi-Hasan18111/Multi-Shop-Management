@@ -1,8 +1,10 @@
 import { Hero } from "@/components/site/Hero";
 import { ProductCard } from "@/components/site/ProductCard";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ShoppingBag } from "lucide-react";
 import Link from "next/link";
+import dbConnect from "@/lib/mongodb";
+import Product from "@/models/Product";
 
 import { Metadata } from "next";
 
@@ -11,15 +13,30 @@ export const metadata: Metadata = {
   description: "Welcome to Shop Manager - Your one-stop shop for everything premium.",
 };
 
-const MOCK_PRODUCTS = [
+export default async function Home() {
+  await dbConnect();
 
-  { name: "Premium Leather Bag", slug: "premium-leather-bag", price: 120, comparePrice: 150, images: [], stock: 10 },
-  { name: "Wireless Headphones", slug: "wireless-headphones", price: 199, images: [], stock: 5 },
-  { name: "Organic T-Shirt", slug: "organic-t-shirt", price: 25, images: [], stock: 100 },
-  { name: "Ceramic Coffee Mug", slug: "ceramic-coffee-mug", price: 15, images: [], stock: 50 },
-];
+  // Fetch featured products from DB
+  const featuredData = await Product.find({ isActive: true })
+    .sort({ createdAt: -1 })
+    .limit(4)
+    .populate("category", "name slug")
+    .lean();
 
-export default function Home() {
+  // Fetch latest arrivals (different sort or skip)
+  const latestData = await Product.find({ isActive: true })
+    .sort({ createdAt: -1 })
+    .skip(4)
+    .limit(4)
+    .populate("category", "name slug")
+    .lean();
+
+  const featuredProducts = JSON.parse(JSON.stringify(featuredData));
+  const latestProducts = JSON.parse(JSON.stringify(latestData));
+
+  // If we don't have enough latest, reuse featured reversed
+  const latestToShow = latestProducts.length > 0 ? latestProducts : [...featuredProducts].reverse();
+
   return (
     <div className="container mx-auto px-4 py-8 space-y-16">
       <Hero />
@@ -36,12 +53,21 @@ export default function Home() {
             </Button>
           </Link>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {MOCK_PRODUCTS.map((product) => (
-            <ProductCard key={product.slug} product={product as any} />
-          ))}
-
-        </div>
+        {featuredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featuredProducts.map((product: any) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 space-y-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-3xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+            <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto text-zinc-400">
+              <ShoppingBag size={32} />
+            </div>
+            <h3 className="text-xl font-bold">No products yet</h3>
+            <p className="text-muted-foreground">Products will appear here once added by shopkeepers.</p>
+          </div>
+        )}
       </section>
 
       <section className="bg-primary/5 rounded-2xl p-8 md:p-12">
@@ -49,9 +75,11 @@ export default function Home() {
           <div className="space-y-6">
             <h2 className="text-4xl font-extrabold tracking-tight">Summer Sale Up to 50% Off!</h2>
             <p className="text-lg text-muted-foreground">
-              Don't miss out on our biggest sale of the season. Grab your favorites at unbeatable prices.
+              Don&apos;t miss out on our biggest sale of the season. Grab your favorites at unbeatable prices.
             </p>
-            <Button size="lg" className="px-8">Get the Deal</Button>
+            <Link href="/deals">
+              <Button size="lg" className="px-8">Get the Deal</Button>
+            </Link>
           </div>
           <div className="relative aspect-video rounded-lg overflow-hidden border shadow-2xl">
              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20" />
@@ -67,12 +95,21 @@ export default function Home() {
           <h2 className="text-3xl font-bold tracking-tight">Latest Arrivals</h2>
           <p className="text-muted-foreground">Fresh styles just landed in our shop.</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {MOCK_PRODUCTS.reverse().map((product) => (
-            <ProductCard key={product.slug} product={product as any} />
-          ))}
-
-        </div>
+        {latestToShow.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {latestToShow.map((product: any) => (
+              <ProductCard key={product._id} product={product} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-16 space-y-4 bg-zinc-50 dark:bg-zinc-900/30 rounded-3xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
+            <div className="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto text-zinc-400">
+              <ShoppingBag size={32} />
+            </div>
+            <h3 className="text-xl font-bold">No new arrivals yet</h3>
+            <p className="text-muted-foreground">Check back soon for new products.</p>
+          </div>
+        )}
       </section>
     </div>
   );

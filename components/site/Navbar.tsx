@@ -6,6 +6,9 @@ import { ShoppingCart, User, Search, Menu, Store, Heart, Bell } from "lucide-rea
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { useSession } from "next-auth/react";
 
 
 import dynamic from "next/dynamic";
@@ -26,6 +29,9 @@ import {
 
 export function Navbar() {
   const pathname = usePathname();
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const { data: session } = useSession();
 
 
   // Hide navbar on admin and shopkeeper routes
@@ -73,13 +79,15 @@ export function Navbar() {
           <Link href="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
-              <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]">
-                0
-              </Badge>
+              {cartCount > 0 && (
+                <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-[10px]">
+                  {cartCount}
+                </Badge>
+              )}
             </Button>
           </Link>
 
-          <Link href="/login">
+          <Link href={session ? "/account" : "/login"}>
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />
             </Button>

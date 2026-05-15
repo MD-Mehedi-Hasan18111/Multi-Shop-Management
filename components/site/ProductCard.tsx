@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useDispatch } from "react-redux";
+import { addItem } from "@/lib/redux/cartSlice";
 
 import { IProduct } from "@/types/product";
 
@@ -15,9 +17,23 @@ interface ProductCardProps {
 
 
 export function ProductCard({ product }: ProductCardProps) {
+  const dispatch = useDispatch();
   const discount = product.comparePrice 
     ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
     : 0;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (product.stock === 0) return;
+    dispatch(addItem({
+      id: product._id,
+      name: product.name,
+      price: product.price,
+      image: product.images[0] || "",
+      quantity: 1,
+    }));
+  };
 
   return (
     <Card className="group relative overflow-hidden transition-all hover:shadow-lg border-muted/60">
@@ -71,7 +87,7 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full" disabled={product.stock === 0}>
+        <Button className="w-full" disabled={product.stock === 0} onClick={handleAddToCart}>
           <ShoppingCart className="mr-2 h-4 w-4" />
           Add to Cart
         </Button>

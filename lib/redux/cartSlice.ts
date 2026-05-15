@@ -14,8 +14,17 @@ interface CartState {
   isOpen: boolean;
 }
 
+const loadCartFromStorage = (): CartItem[] => {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem("cart") || "[]");
+  } catch {
+    return [];
+  }
+};
+
 const initialState: CartState = {
-  items: typeof window !== "undefined" ? JSON.parse(localStorage.getItem("cart") || "[]") : [],
+  items: loadCartFromStorage(),
   isOpen: false,
 };
 
