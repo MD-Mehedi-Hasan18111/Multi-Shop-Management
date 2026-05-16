@@ -4,6 +4,8 @@ import Product from "@/models/Product";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);

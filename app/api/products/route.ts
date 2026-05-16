@@ -4,6 +4,7 @@ import Product from "@/models/Product";
 import Category from "@/models/Category";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import mongoose from "mongoose";
 
 export async function GET(req: Request) {
   try {
@@ -17,6 +18,8 @@ export async function GET(req: Request) {
     const url = new URL(req.url);
     const shopkeeperId = url.searchParams.get("shopkeeper");
     const search = url.searchParams.get("search");
+    const category = url.searchParams.get("category");
+    const status = url.searchParams.get("status");
     
     // If shopkeeper parameter is passed, filter by it.
     // Ensure the requester is either the shopkeeper or an admin
@@ -35,9 +38,23 @@ export async function GET(req: Request) {
       query.name = { $regex: search, $options: "i" };
     }
 
+    if (category) {
+      const categoryQuery = mongoose.Types.ObjectId.isValid(category)
+        ? { $or: [{ _id: category }, { slug: category }] }
+        : { slug: category };
+      const foundCategory = await Category.findOne(categoryQuery);
+      query.category = foundCategory?._id || category;
+    }
+
+    if (status === "active") query.isActive = true;
+    if (status === "inactive") query.isActive = false;
+    if (status === "out-of-stock") query.stock = 0;
+    if (status === "low-stock") query.$expr = { $lte: ["$stock", "$lowStockThreshold"] };
+
     // Include category details if needed
     const products = await Product.find(query)
       .populate('category', 'name slug')
+      .populate('shopkeeper', 'name email')
       .sort({ createdAt: -1 });
     
     return NextResponse.json(products);

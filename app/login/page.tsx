@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Store, Loader2, AlertCircle } from "lucide-react";
 
-export default function LoginPage() {
-  const router = useRouter();
+function LoginForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
@@ -35,8 +34,7 @@ export default function LoginPage() {
       if (result?.error) {
         setError("Invalid email or password");
       } else {
-        router.push(callbackUrl);
-        router.refresh();
+        window.location.assign(callbackUrl);
       }
     } catch {
       setError("An unexpected error occurred");
@@ -120,5 +118,13 @@ export default function LoginPage() {
         </form>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[calc(100vh-10rem)]" />}>
+      <LoginForm />
+    </Suspense>
   );
 }

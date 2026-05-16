@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/site/Navbar";
 import BottomNav from "@/components/site/BottomNav";
 import { Footer } from "@/components/site/Footer";
+import { ServiceWorkerCleanup } from "@/components/ServiceWorkerCleanup";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -44,7 +46,6 @@ export const metadata: Metadata = {
   },
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,13 +53,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <head>
+        <Script src="/dev-sw-cleanup.js" strategy="beforeInteractive" />
+      </head>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         <Providers>
+          <ServiceWorkerCleanup />
           <div className="flex flex-col min-h-screen">
             <Navbar />
-            <main className="flex-grow pb-20 md:pb-0">
-              {children}
-            </main>
+            <main className="flex-grow pb-20 md:pb-0">{children}</main>
             <Footer />
             <BottomNav />
           </div>

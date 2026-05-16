@@ -20,15 +20,24 @@ export async function PUT(
     const { status } = await req.json();
     await dbConnect();
 
+    const existingOrder = await Order.findById(params.id);
+
+    if (!existingOrder) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    if (
+      session.user.role !== "admin" &&
+      existingOrder.shopkeeper.toString() !== session.user.id
+    ) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const order = await Order.findByIdAndUpdate(
       params.id,
       { status },
       { new: true }
     ).populate("user");
-
-    if (!order) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
-    }
 
     // Trigger External Notifications
     await sendStatusUpdateEmail(order.user.email, order.orderNumber, status);

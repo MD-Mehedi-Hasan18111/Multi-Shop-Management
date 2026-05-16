@@ -8,15 +8,15 @@ import {
   Package,
   ShoppingCart,
   Users,
-  Settings,
+  Store,
 } from "lucide-react";
 
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
+  { name: "Shops", href: "/admin/shops", icon: Store },
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
   { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
 export function BottomNav() {
