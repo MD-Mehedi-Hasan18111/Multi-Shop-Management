@@ -7,13 +7,21 @@ import { useRouter } from "next/navigation";
 import { RootState } from "@/lib/redux/store";
 import { clearCart } from "@/lib/redux/cartSlice";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Truck, ShieldCheck, Banknote, Loader2, ShoppingBag, CheckCircle2 } from "lucide-react";
+import { MapPin, Truck, ShieldCheck, Banknote, Loader2, ShoppingBag, CheckCircle2, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect } from "react";
 
 export default function CheckoutPage() {
   const { data: session } = useSession();
@@ -22,6 +30,8 @@ export default function CheckoutPage() {
   const cartItems = useSelector((state: RootState) => state.cart.items);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [fetchingAddresses, setFetchingAddresses] = useState(false);
 
   const [form, setForm] = useState({
     firstName: "",
@@ -31,6 +41,45 @@ export default function CheckoutPage() {
     zipCode: "",
     phone: "",
   });
+
+  useEffect(() => {
+    if (session) {
+      fetchAddresses();
+    }
+  }, [session]);
+
+  const fetchAddresses = async () => {
+    try {
+      setFetchingAddresses(true);
+      const res = await fetch("/api/user/addresses");
+      if (res.ok) {
+        const data = await res.json();
+        setSavedAddresses(data);
+
+        // Auto-fill default address
+        const defaultAddr = data.find((a: any) => a.isDefault) || data[0];
+        if (defaultAddr) {
+          selectAddress(defaultAddr);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch addresses:", error);
+    } finally {
+      setFetchingAddresses(false);
+    }
+  };
+
+  const selectAddress = (addr: any) => {
+    const names = addr.fullName.split(" ");
+    setForm({
+      firstName: names[0] || "",
+      lastName: names.slice(1).join(" ") || "",
+      address: addr.streetAddress,
+      city: addr.city,
+      zipCode: addr.zipCode,
+      phone: addr.phoneNumber,
+    });
+  };
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const tax = subtotal * 0.1;
@@ -117,15 +166,54 @@ export default function CheckoutPage() {
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-7xl">
-      <h1 className="text-4xl font-extrabold tracking-tight mb-8 text-center">Checkout</h1>
+      <h1 className="text-4xl text-primary font-extrabold tracking-tight mb-8 text-left">Checkout</h1>
 
       <div className="grid lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-8">
           {/* Shipping Address */}
-          <section className="space-y-4">
-            <h2 className="text-2xl font-bold flex items-center gap-2">
-              <Truck className="h-6 w-6" /> Shipping Details
-            </h2>
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-bold flex items-center gap-2">
+                <Truck className="h-6 w-6 text-primary" /> Shipping Details
+              </h2>
+
+              {savedAddresses.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="rounded-xl gap-2 font-bold bg-zinc-50 border-zinc-200">
+                      <MapPin size={16} /> Pick Saved Address <ChevronDown size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80 rounded-[2rem] p-3 shadow-2xl border-none bg-white/95 backdrop-blur-xl">
+                    <div className="px-3 py-2 mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-zinc-400">Your Saved Addresses</div>
+                    {savedAddresses.map((addr) => (
+                      <DropdownMenuItem
+                        key={addr._id}
+                        onClick={() => selectAddress(addr)}
+                        className="p-4 rounded-2xl cursor-pointer hover:bg-zinc-50 transition-all mb-1 group"
+                      >
+                        <div className="space-y-1.5 w-full">
+                          <div className="flex items-center justify-between">
+                            <p className="font-bold text-zinc-900 group-hover:text-blue-600 transition-colors">
+                              {addr.title}
+                            </p>
+                            {addr.isDefault && (
+                              <Badge className="bg-blue-50 text-blue-600 border-blue-100 text-[9px] px-2 h-5 font-black uppercase">Default</Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-zinc-500 leading-relaxed truncate">{addr.streetAddress}, {addr.city}</p>
+                        </div>
+                      </DropdownMenuItem>
+                    ))}
+                    <Separator className="my-2 opacity-50" />
+                    <DropdownMenuItem asChild className="p-4 rounded-2xl cursor-pointer justify-center text-blue-600 font-black text-[10px] uppercase tracking-widest hover:bg-blue-50/50">
+                      <Link href="/account/addresses">Manage Addresses</Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
+
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>First Name</Label>

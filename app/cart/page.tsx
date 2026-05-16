@@ -70,7 +70,7 @@ export default function CartPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-7xl">
+    <div className="container px-4 py-12">
       <h1 className="text-5xl font-black tracking-tight mb-12">Shopping Bag</h1>
 
       <div className="grid lg:grid-cols-3 gap-16">
