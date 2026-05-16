@@ -22,7 +22,7 @@ export default function CartPage() {
   const [loading, setLoading] = useState(false);
 
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const tax = subtotal * 0.1;
+  const tax = subtotal * 0;
   const discount = appliedCoupon ? appliedCoupon.discountAmount : 0;
   const total = Math.max(0, subtotal + tax - discount);
 
@@ -91,9 +91,9 @@ export default function CartPage() {
                   <div className="flex justify-between items-start">
                     <div className="space-y-1">
                       <h3 className="font-bold text-2xl text-zinc-900 dark:text-zinc-100">{item.name}</h3>
-                      <p className="text-zinc-500 font-medium">${item.price?.toFixed(2)} each</p>
+                      <p className="text-zinc-500 font-medium">BDT {item.price?.toFixed(2)} each</p>
                     </div>
-                    <p className="font-black text-2xl text-blue-600">${(item.price * item.quantity).toFixed(2)}</p>
+                    <p className="font-black text-2xl text-blue-600">BDT {(item.price * item.quantity).toFixed(2)}</p>
                   </div>
                   <div className="flex items-center justify-between mt-6">
                     <div className="flex items-center bg-white dark:bg-zinc-800 p-1 rounded-xl border border-zinc-200 dark:border-zinc-700 shadow-sm">
@@ -153,7 +153,7 @@ export default function CartPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between text-lg">
                     <span className="text-zinc-500 font-medium">Subtotal</span>
-                    <span className="font-bold">${subtotal.toFixed(2)}</span>
+                    <span className="font-bold">BDT {subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-lg">
                     <span className="text-zinc-500 font-medium">Shipping</span>
@@ -161,7 +161,7 @@ export default function CartPage() {
                   </div>
                   <div className="flex justify-between text-lg">
                     <span className="text-zinc-500 font-medium">Tax</span>
-                    <span className="font-bold">${tax.toFixed(2)}</span>
+                    <span className="font-bold">BDT {tax.toFixed(2)}</span>
                   </div>
 
                   {appliedCoupon && (
@@ -184,7 +184,7 @@ export default function CartPage() {
 
                 <div className="flex justify-between text-3xl font-black text-zinc-900 dark:text-zinc-100">
                   <span>Total</span>
-                  <span>${total.toFixed(2)}</span>
+                  <span>BDT {total.toFixed(2)}</span>
                 </div>
 
                 <div className="space-y-3 pt-4">
