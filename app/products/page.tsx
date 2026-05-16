@@ -1,82 +1,50 @@
 import { Metadata } from "next";
-import { ProductCard } from "@/components/site/ProductCard";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Grid, List, Filter, ChevronDown } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { Suspense } from "react";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 import Category from "@/models/Category";
+import ShopSettings from "@/models/ShopSettings";
 import ProductsListClient from "@/components/site/ProductsListClient";
 
-
-
 export const metadata: Metadata = {
-  title: "All Products",
-  description: "Browse our extensive collection of premium products.",
+  title: "All Products | Shop Manager",
+  description: "Browse our extensive collection of premium products from various shops and categories.",
 };
 
 export default async function ProductsPage() {
   await dbConnect();
   
-  // Fetch initial products and categories on the server
-  const productsData = await Product.find({ isActive: true }).sort({ createdAt: -1 }).limit(12).populate("category", "name slug").lean();
+  // Fetch initial products, categories and shops on the server
+  const productsData = await Product.find({ isActive: true })
+    .sort({ createdAt: -1 })
+    .populate("category", "name slug")
+    .lean();
+    
   const categoriesData = await Category.find({}).lean();
+  const shopsData = await ShopSettings.find({}, { shopName: 1, _id: 1, slug: 1 }).lean();
 
   const { attachShopInfo } = await import("@/lib/shop-utils");
   const productsWithShop = await attachShopInfo(productsData);
 
   const products = JSON.parse(JSON.stringify(productsWithShop));
   const categories = JSON.parse(JSON.stringify(categoriesData));
+  const shops = JSON.parse(JSON.stringify(shopsData));
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar Filters */}
-        <aside className="w-full md:w-64 space-y-8 hidden md:block">
-          <div>
-            <h3 className="font-bold text-lg mb-4">Categories</h3>
-            <div className="space-y-2">
-              {categories.length > 0 ? categories.map((cat: { _id: string, slug: string, name: string }) => (
-                <div key={cat._id} className="flex items-center space-x-2">
-                  <Checkbox id={cat.slug} />
-                  <Label htmlFor={cat.slug}>{cat.name}</Label>
-                </div>
-              )) : (
-
-                ["Electronics", "Fashion", "Home & Living", "Accessories"].map((cat) => (
-                  <div key={cat} className="flex items-center space-x-2">
-                    <Checkbox id={cat} />
-                    <Label htmlFor={cat}>{cat}</Label>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-bold text-lg mb-4">Price Range</h3>
-            <Slider defaultValue={[0, 1000]} max={1000} step={10} className="mt-4" />
-            <div className="flex justify-between mt-2 text-sm text-muted-foreground">
-              <span>$0</span>
-              <span>$1000+</span>
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 space-y-6">
-          <ProductsListClient initialProducts={products as any} />
-        </main>
-
+    <div className="bg-zinc-50/50 min-h-screen">
+      <div className="container mx-auto px-4 py-12 lg:py-16 max-w-7xl">
+        <div className="space-y-2 mb-12">
+          <h1 className="text-5xl font-black tracking-tight italic uppercase text-zinc-900">Explore Products</h1>
+          <p className="text-zinc-500 text-lg font-medium">Discover unique products from premium local shops.</p>
+        </div>
+        
+        <Suspense fallback={<div className="h-96 flex items-center justify-center">Loading products...</div>}>
+          <ProductsListClient 
+            initialProducts={products} 
+            categories={categories}
+            shops={shops}
+          />
+        </Suspense>
       </div>
     </div>
   );
