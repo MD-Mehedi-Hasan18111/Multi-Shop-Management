@@ -7,7 +7,8 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  BarChart3,
+  Star,
+  Ticket,
   User,
 } from "lucide-react";
 
@@ -15,7 +16,8 @@ const navItems = [
   { name: "Dash", href: "/shopkeeper/dashboard", icon: LayoutDashboard },
   { name: "Products", href: "/shopkeeper/products", icon: Package },
   { name: "Orders", href: "/shopkeeper/orders", icon: ShoppingCart },
-  { name: "Analytics", href: "/shopkeeper/analytics", icon: BarChart3 },
+  { name: "Reviews", href: "/shopkeeper/reviews", icon: Star },
+  { name: "Coupons", href: "/shopkeeper/coupons", icon: Ticket },
   { name: "Profile", href: "/shopkeeper/profile", icon: User },
 ];
 

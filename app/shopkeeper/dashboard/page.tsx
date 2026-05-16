@@ -88,50 +88,36 @@ export default function ShopkeeperDashboard() {
       setImporting(false);
     }
   };
-
   return (
-    <div className="space-y-10 pb-20">
+    <div className="space-y-6 lg:space-y-10 pb-20 overflow-x-hidden max-w-full">
       {/* Header & Global Actions */}
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-5xl font-black tracking-tight italic uppercase">Store Analytics</h1>
-          <p className="text-zinc-500 font-medium">Monitoring your performance from {startDate} to {endDate}</p>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight italic uppercase">Store Analytics</h1>
+          <p className="text-zinc-500 font-medium text-sm sm:text-base">Monitoring your performance from {startDate} to {endDate}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-4 bg-zinc-50 dark:bg-zinc-900/50 p-4 rounded-[2rem] border border-zinc-100 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <Calendar size={18} className="text-zinc-400" />
+        <div className="flex flex-col sm:flex-row flex-wrap items-center gap-3 sm:gap-4 bg-zinc-50 dark:bg-zinc-900/50 p-3 sm:p-4 rounded-3xl border border-zinc-100 dark:border-zinc-800 w-full lg:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <Calendar size={18} className="text-zinc-400 shrink-0" />
             <Input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="w-40 h-10 rounded-xl border-none bg-white dark:bg-zinc-800 font-bold"
+              className="flex-1 sm:w-36 h-10 rounded-xl border-none bg-white dark:bg-zinc-800 font-bold text-xs"
             />
             <span className="text-zinc-300">to</span>
             <Input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
-              className="w-40 h-10 rounded-xl border-none bg-white dark:bg-zinc-800 font-bold"
+              className="flex-1 sm:w-36 h-10 rounded-xl border-none bg-white dark:bg-zinc-800 font-bold text-xs"
             />
           </div>
-          <div className="h-8 w-px bg-zinc-200 dark:bg-zinc-700 mx-2" />
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" className="rounded-xl gap-2 font-bold" onClick={handleExport} disabled={exporting}>
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download size={16} />} CSV Export
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none rounded-xl gap-2 font-bold h-10 px-4" onClick={handleExport} disabled={exporting}>
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download size={16} />} Export
             </Button>
-            <div className="relative">
-              <Button variant="outline" size="sm" className="rounded-xl gap-2 font-bold" disabled={importing}>
-                {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload size={16} />} CSV Import
-              </Button>
-              <input
-                type="file"
-                accept=".csv"
-                className="absolute inset-0 opacity-0 cursor-pointer"
-                onChange={handleImport}
-                disabled={importing}
-              />
-            </div>
           </div>
         </div>
       </div>
