@@ -61,7 +61,7 @@ export default function TopProducts() {
             </div>
             <div className="text-right">
               <p className="font-bold text-zinc-900 dark:text-zinc-100">
-                ${product.totalRevenue.toFixed(2)}
+                BDT {product.totalRevenue.toFixed(2)}
               </p>
               <p className="text-[10px] text-green-500 flex items-center justify-end gap-0.5">
                 Revenue <ArrowUpRight size={10} />

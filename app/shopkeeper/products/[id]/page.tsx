@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,11 @@ import { Label } from "@/components/ui/label";
 import { ArrowLeft, Loader2, Upload, Plus, X } from "lucide-react";
 import Link from "next/link";
 
-export default function NewProductPage() {
+export default function EditProductPage() {
   const router = useRouter();
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [categories, setCategories] = useState<any[]>([]);
   const [error, setError] = useState("");
 
@@ -33,19 +35,47 @@ export default function NewProductPage() {
   });
 
   useEffect(() => {
-    // Fetch categories for the dropdown
-    fetch("/api/categories")
-      .then((res) => res.json())
-      .then((data) => setCategories(data))
-      .catch((err) => console.error(err));
-  }, []);
+    const fetchData = async () => {
+      try {
+        setFetching(true);
+        // Fetch categories
+        const catRes = await fetch("/api/categories");
+        const cats = await catRes.json();
+        setCategories(cats);
+
+        // Fetch product details
+        const prodRes = await fetch(`/api/products/${id}`);
+        if (!prodRes.ok) throw new Error("Product not found");
+        const product = await prodRes.json();
+
+        setForm({
+          name: product.name,
+          slug: product.slug,
+          sku: product.sku,
+          price: product.price.toString(),
+          comparePrice: product.comparePrice ? product.comparePrice.toString() : "",
+          stock: product.stock.toString(),
+          category: typeof product.category === 'object' ? product.category._id : product.category,
+          description: product.description,
+          images: product.images || [],
+        });
+      } catch (err: any) {
+        console.error(err);
+        setError(err.message || "Failed to load product data");
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchData();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
       [name]: value,
-      ...(name === "name" ? { slug: value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") } : {}),
+      ...(name === "name" && !form.slug ? { slug: value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "") } : {}),
     }));
   };
 
@@ -105,7 +135,6 @@ export default function NewProductPage() {
       setError("An unexpected error occurred during upload.");
     } finally {
       setUploadingImage(false);
-      // Reset file input
       e.target.value = '';
     }
   };
@@ -123,13 +152,13 @@ export default function NewProductPage() {
     setError("");
 
     try {
-      const res = await fetch("/api/products", {
-        method: "POST",
+      const res = await fetch(`/api/products/${id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
           price: parseFloat(form.price),
-          comparePrice: form.comparePrice ? parseFloat(form.comparePrice) : undefined,
+          comparePrice: form.comparePrice ? parseFloat(form.comparePrice) : null,
           stock: parseInt(form.stock),
         }),
       });
@@ -138,7 +167,7 @@ export default function NewProductPage() {
         router.push("/shopkeeper/products");
       } else {
         const data = await res.json();
-        setError(data.error || "Failed to create product");
+        setError(data.error || "Failed to update product");
       }
     } catch {
       setError("An unexpected error occurred");
@@ -147,6 +176,14 @@ export default function NewProductPage() {
     }
   };
 
+  if (fetching) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -154,8 +191,8 @@ export default function NewProductPage() {
           <Link href="/shopkeeper/products"><ArrowLeft className="h-5 w-5" /></Link>
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Add New Product</h1>
-          <p className="text-muted-foreground">Create a new product listing</p>
+          <h1 className="text-3xl font-bold tracking-tight">Edit Product</h1>
+          <p className="text-muted-foreground">Modify your product listing</p>
         </div>
       </div>
 
@@ -324,10 +361,10 @@ export default function NewProductPage() {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating...
+                Saving...
               </>
             ) : (
-              "Create Product"
+              "Save Changes"
             )}
           </Button>
         </div>

@@ -12,15 +12,17 @@ import Link from "next/link";
 export default function ShopkeeperProducts() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchProducts();
   }, []);
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (search = "") => {
     try {
       setLoading(true);
-      const res = await fetch("/api/products");
+      const url = search ? `/api/products?search=${encodeURIComponent(search)}` : "/api/products";
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setProducts(data);
@@ -35,9 +37,20 @@ export default function ShopkeeperProducts() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     
-    // We would call DELETE /api/products/[id] here
-    // Let's implement it in the UI first
-    alert("Delete product API not implemented yet!");
+    try {
+      const res = await fetch(`/api/products/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setProducts((prev) => prev.filter((p) => p._id !== id));
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete product");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("An unexpected error occurred");
+    }
   };
 
   return (
@@ -54,8 +67,14 @@ export default function ShopkeeperProducts() {
       <Card>
         <CardHeader>
           <div className="flex items-center gap-4">
-            <Input placeholder="Filter products..." className="max-w-sm" />
-            <Button variant="outline">Search</Button>
+            <Input 
+              placeholder="Filter products..." 
+              className="max-w-sm" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && fetchProducts(searchQuery)}
+            />
+            <Button variant="outline" onClick={() => fetchProducts(searchQuery)}>Search</Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -106,9 +125,11 @@ export default function ShopkeeperProducts() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon">
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
+                          <Link href={`/shopkeeper/products/${product._id}`}>
+                            <Button variant="ghost" size="icon">
+                              <Edit2 className="h-4 w-4" />
+                            </Button>
+                          </Link>
                           <Button variant="ghost" size="icon" onClick={() => handleDelete(product._id)} className="text-destructive">
                             <Trash2 className="h-4 w-4" />
                           </Button>

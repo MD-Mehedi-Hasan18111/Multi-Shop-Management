@@ -16,6 +16,7 @@ export async function GET(req: Request) {
     
     const url = new URL(req.url);
     const shopkeeperId = url.searchParams.get("shopkeeper");
+    const search = url.searchParams.get("search");
     
     // If shopkeeper parameter is passed, filter by it.
     // Ensure the requester is either the shopkeeper or an admin
@@ -28,6 +29,10 @@ export async function GET(req: Request) {
     } else if (session.user.role === 'shopkeeper') {
       // By default, a shopkeeper gets their own products
       query.shopkeeper = session.user.id;
+    }
+
+    if (search) {
+      query.name = { $regex: search, $options: "i" };
     }
 
     // Include category details if needed

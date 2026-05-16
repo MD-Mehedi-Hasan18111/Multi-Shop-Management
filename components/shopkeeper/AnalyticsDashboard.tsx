@@ -10,7 +10,7 @@ import {
   LineChart,
   Line,
 } from "recharts";
-import { TrendingUp, ShoppingBag, DollarSign } from "lucide-react";
+import { TrendingUp, ShoppingBag, Banknote } from "lucide-react";
 
 
 interface SalesData {
@@ -51,10 +51,10 @@ export default function AnalyticsDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-zinc-500">Total Revenue</p>
-              <h3 className="text-2xl font-bold">${totalRevenue.toFixed(2)}</h3>
+              <h3 className="text-2xl font-bold">BDT {totalRevenue.toFixed(2)}</h3>
             </div>
             <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-xl">
-              <DollarSign size={24} />
+              <Banknote size={24} />
             </div>
           </div>
         </div>
@@ -85,11 +85,10 @@ export default function AnalyticsDashboard() {
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-3 py-1 text-sm rounded-md capitalize transition-all ${
-                  period === p
-                    ? "bg-white dark:bg-zinc-700 shadow-sm font-medium"
-                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
-                }`}
+                className={`px-3 py-1 text-sm rounded-md capitalize transition-all ${period === p
+                  ? "bg-white dark:bg-zinc-700 shadow-sm font-medium"
+                  : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  }`}
               >
                 {p}
               </button>
@@ -106,23 +105,23 @@ export default function AnalyticsDashboard() {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-                <XAxis 
-                  dataKey="_id" 
-                  axisLine={false} 
-                  tickLine={false} 
+                <XAxis
+                  dataKey="_id"
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 12, fill: "#71717a" }}
                   dy={10}
                 />
-                <YAxis 
-                  axisLine={false} 
-                  tickLine={false} 
+                <YAxis
+                  axisLine={false}
+                  tickLine={false}
                   tick={{ fontSize: 12, fill: "#71717a" }}
                 />
-                <Tooltip 
-                  contentStyle={{ 
-                    borderRadius: "12px", 
-                    border: "none", 
-                    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)" 
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: "12px",
+                    border: "none",
+                    boxShadow: "0 10px 15px -3px rgb(0 0 0 / 0.1)"
                   }}
                 />
                 <Line

@@ -18,7 +18,7 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const dispatch = useDispatch();
-  const discount = product.comparePrice 
+  const discount = product.comparePrice
     ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
     : 0;
 
@@ -55,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
               Out of Stock
             </Badge>
           )}
-          
+
           <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
             <Button size="icon" variant="secondary" className="rounded-full">
               <Eye className="h-4 w-4" />
@@ -77,12 +77,12 @@ export function ProductCard({ product }: ProductCardProps) {
           </h3>
         </Link>
         <div className="mt-2 flex items-center gap-2">
-          <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
-          {product.comparePrice && (
+          <span className="text-lg font-bold">BDT {product.price.toFixed(2)}</span>
+          {product.comparePrice ? (
             <span className="text-sm text-muted-foreground line-through">
-              ${product.comparePrice.toFixed(2)}
+              BDT {product.comparePrice.toFixed(2)}
             </span>
-          )}
+          ) : ''}
         </div>
       </CardContent>
 
