@@ -35,8 +35,12 @@ export default async function Home() {
     .populate("category", "name slug")
     .lean();
 
-  const featuredProducts = JSON.parse(JSON.stringify(featuredData));
-  const latestProducts = JSON.parse(JSON.stringify(latestData));
+  const { attachShopInfo } = await import("@/lib/shop-utils");
+  const featuredWithShop = await attachShopInfo(featuredData);
+  const latestWithShop = await attachShopInfo(latestData);
+
+  const featuredProducts = JSON.parse(JSON.stringify(featuredWithShop));
+  const latestProducts = JSON.parse(JSON.stringify(latestWithShop));
 
   // If we don't have enough latest, reuse featured reversed
   const latestToShow = latestProducts.length > 0 ? latestProducts : [...featuredProducts].reverse();

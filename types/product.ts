@@ -7,7 +7,7 @@ export interface IProduct {
   comparePrice?: number;
   images: string[];
   category: { _id: string; name: string; slug: string };
-
+  shop?: { _id: string; shopName: string; logo: string; slug: string };
   stock: number;
   lowStockThreshold?: number;
   averageRating?: number;

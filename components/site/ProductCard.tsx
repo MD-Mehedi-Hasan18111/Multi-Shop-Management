@@ -68,9 +68,23 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       <CardContent className="p-4">
-        <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">
-          {product.category?.name || "Product"}
-        </p>
+        <div className="flex items-center justify-between gap-2 mb-1">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+            {product.category?.name || "Product"}
+          </p>
+          {product.shop && (
+            <Link href={`/shops/${product.shop.slug || product.shop._id}`} className="flex items-center gap-1 group/shop">
+              {product.shop.logo && (
+                <div className="w-4 h-4 rounded-full overflow-hidden border border-zinc-100">
+                   <img src={product.shop.logo} alt="" className="w-full h-full object-cover" />
+                </div>
+              )}
+              <span className="text-[10px] font-bold text-zinc-400 group-hover/shop:text-primary transition-colors truncate max-w-[80px]">
+                {product.shop.shopName}
+              </span>
+            </Link>
+          )}
+        </div>
         <Link href={`/product/${product.slug}`}>
           <h3 className="font-semibold line-clamp-1 group-hover:text-primary transition-colors">
             {product.name}

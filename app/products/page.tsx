@@ -31,7 +31,10 @@ export default async function ProductsPage() {
   const productsData = await Product.find({ isActive: true }).sort({ createdAt: -1 }).limit(12).populate("category", "name slug").lean();
   const categoriesData = await Category.find({}).lean();
 
-  const products = JSON.parse(JSON.stringify(productsData));
+  const { attachShopInfo } = await import("@/lib/shop-utils");
+  const productsWithShop = await attachShopInfo(productsData);
+
+  const products = JSON.parse(JSON.stringify(productsWithShop));
   const categories = JSON.parse(JSON.stringify(categoriesData));
 
   return (

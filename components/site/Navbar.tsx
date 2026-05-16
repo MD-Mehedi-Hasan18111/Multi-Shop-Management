@@ -51,6 +51,7 @@ export function Navbar() {
             <Link href="/products" className="hover:text-primary transition-colors">All Products</Link>
             <Link href="/categories" className="hover:text-primary transition-colors">Categories</Link>
             <Link href="/deals" className="hover:text-primary transition-colors">Deals</Link>
+            <Link href="/shops" className="hover:text-primary transition-colors">Shops</Link>
           </div>
         </div>
 
@@ -107,6 +108,7 @@ export function Navbar() {
                 <Link href="/products" className="text-lg font-medium">All Products</Link>
                 <Link href="/categories" className="text-lg font-medium">Categories</Link>
                 <Link href="/deals" className="text-lg font-medium">Deals</Link>
+                <Link href="/shops" className="text-lg font-medium">Shops</Link>
                 <Link href="/account" className="text-lg font-medium">My Account</Link>
               </div>
             </SheetContent>

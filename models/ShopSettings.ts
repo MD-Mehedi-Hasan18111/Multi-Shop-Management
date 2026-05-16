@@ -2,10 +2,21 @@ import mongoose, { Schema, model, models } from 'mongoose';
 
 const ShopSettingsSchema = new Schema(
   {
+    shopkeeper: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      unique: true,
+    },
     shopName: {
       type: String,
       required: [true, 'Please provide a shop name'],
       default: 'My Shop',
+    },
+    slug: {
+      type: String,
+      unique: true,
+      sparse: true,
     },
     logo: {
       type: String,
@@ -44,6 +55,9 @@ const ShopSettingsSchema = new Schema(
   }
 );
 
-const ShopSettings = models.ShopSettings || model('ShopSettings', ShopSettingsSchema);
+if (models.ShopSettings) {
+  delete (mongoose as any).models.ShopSettings;
+}
+const ShopSettings = model('ShopSettings', ShopSettingsSchema);
 
 export default ShopSettings;

@@ -70,7 +70,9 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   }
 
   // Convert MongoDB document to plain object for client component
-  const product = JSON.parse(JSON.stringify(productData));
+  const { attachShopInfo } = await import("@/lib/shop-utils");
+  const [productWithShop] = await attachShopInfo([productData]);
+  const product = JSON.parse(JSON.stringify(productWithShop));
 
   // JSON-LD Structured Data
   const jsonLd = {
@@ -145,6 +147,21 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
         <div className="space-y-8">
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
+              {product.shop && (
+                <Link 
+                  href={`/shops/${product.shop.slug || product.shop._id}`} 
+                  className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-2xl group border border-transparent hover:border-blue-500 transition-all"
+                >
+                  {product.shop.logo && (
+                    <div className="w-6 h-6 rounded-full overflow-hidden">
+                       <img src={product.shop.logo} alt="" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <span className="text-sm font-bold text-zinc-600 dark:text-zinc-300 group-hover:text-blue-600 transition-colors">
+                    {product.shop.shopName}
+                  </span>
+                </Link>
+              )}
               <Badge className="bg-blue-600 hover:bg-blue-600 text-white px-3 py-1 rounded-full">New Arrival</Badge>
               <div className="flex items-center gap-1 text-yellow-400">
                 <Star className="h-5 w-5 fill-current" />
