@@ -1,4 +1,6 @@
 import mongoose, { Schema, model, models } from 'mongoose';
+import './Category';
+import './User';
 
 const ProductSchema = new Schema(
   {

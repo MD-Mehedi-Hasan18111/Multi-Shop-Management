@@ -1,5 +1,16 @@
 /* eslint-disable no-var */
 import mongoose from "mongoose";
+import "@/models/User";
+import "@/models/Product";
+import "@/models/Category";
+import "@/models/Order";
+import "@/models/Cart";
+import "@/models/Address";
+import "@/models/Coupon";
+import "@/models/Review";
+import "@/models/Notification";
+import "@/models/Wishlist";
+import "@/models/ShopSettings";
 
 
 declare global {

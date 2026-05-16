@@ -1,4 +1,7 @@
 import mongoose, { Schema, model, models } from 'mongoose';
+import './User';
+import './Product';
+import './Coupon';
 
 const OrderSchema = new Schema(
   {

@@ -5,6 +5,7 @@ import { ArrowRight, ShoppingBag } from "lucide-react";
 import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
+import Category from "@/models/Category";
 
 import { Metadata } from "next";
 
@@ -15,6 +16,9 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   await dbConnect();
+  
+  // Ensure models are registered (Next.js can sometimes tree-shake unused imports)
+  const _models = { Product, Category };
 
   // Fetch featured products from DB
   const featuredData = await Product.find({ isActive: true })

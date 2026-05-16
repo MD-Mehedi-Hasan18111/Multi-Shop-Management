@@ -11,7 +11,7 @@ export async function PATCH(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "admin") {
+    if (!session || (session.user.role !== "admin" && session.user.role !== "shopkeeper")) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,6 +20,14 @@ export async function PATCH(
 
     const review = await Review.findById(params.id);
     if (!review) return NextResponse.json({ error: "Review not found" }, { status: 404 });
+
+    // Authorization check for shopkeepers: must own the product
+    if (session.user.role === "shopkeeper") {
+      const product = await Product.findById(review.product);
+      if (!product || product.shopkeeper.toString() !== session.user.id) {
+        return NextResponse.json({ error: "Forbidden: You don't own this product" }, { status: 403 });
+      }
+    }
 
     const wasApproved = review.isApproved;
     review.isApproved = isApproved;
@@ -62,8 +70,17 @@ export async function DELETE(
     const review = await Review.findById(params.id);
     if (!review) return NextResponse.json({ error: "Review not found" }, { status: 404 });
 
-    // Check if user is owner or admin
-    if (session.user.id !== review.user.toString() && session.user.role !== "admin") {
+    // Check if user is review author, admin, or product shopkeeper
+    let isAuthorized = session.user.role === "admin" || session.user.id === review.user.toString();
+    
+    if (!isAuthorized && session.user.role === "shopkeeper") {
+      const product = await Product.findById(review.product);
+      if (product && product.shopkeeper.toString() === session.user.id) {
+        isAuthorized = true;
+      }
+    }
+
+    if (!isAuthorized) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
