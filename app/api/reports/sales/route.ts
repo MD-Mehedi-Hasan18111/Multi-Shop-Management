@@ -1,58 +1,68 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
+import Product from "@/models/Product";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import mongoose from "mongoose";
 
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || (session.user.role !== "shopkeeper" && session.user.role !== "admin")) {
+    if (!session || session.user.role !== "shopkeeper") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(req.url);
-    const period = searchParams.get("period") || "daily"; // daily, weekly, monthly
-
+    const period = searchParams.get("period") || "daily";
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
     await dbConnect();
 
-    let startDate = new Date();
-    if (period === "daily") {
-      startDate.setHours(0, 0, 0, 0);
-    } else if (period === "weekly") {
-      startDate.setDate(startDate.getDate() - 7);
-    } else if (period === "monthly") {
-      startDate.setMonth(startDate.getMonth() - 1);
-    }
+    const shopkeeperId = new mongoose.Types.ObjectId(session.user.id);
 
-    const match: any = {
-      createdAt: { $gte: startDate },
+    // Date Range Filter
+    const matchQuery: any = { 
+      shopkeeper: shopkeeperId,
       status: { $ne: "cancelled" }
     };
 
-    if (session.user.role === "shopkeeper") {
-      match.shopkeeper = session.user.id;
+    if (startDate || endDate) {
+      matchQuery.createdAt = {};
+      if (startDate) matchQuery.createdAt.$gte = new Date(startDate);
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        matchQuery.createdAt.$lte = end;
+      }
     }
 
-    const salesReport = await Order.aggregate([
-      { $match: match },
+    // Sales Trend Aggregation
+    let groupBy: any = {};
+    if (period === "daily") {
+      groupBy = { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } };
+    } else if (period === "weekly") {
+      groupBy = { $dateToString: { format: "%Y-W%V", date: "$createdAt" } };
+    } else {
+      groupBy = { $dateToString: { format: "%Y-%m", date: "$createdAt" } };
+    }
+
+    const salesData = await Order.aggregate([
+      { $match: matchQuery },
       {
         $group: {
-          _id: {
-            $dateToString: { 
-              format: period === "daily" ? "%Y-%m-%d %H:00" : "%Y-%m-%d", 
-              date: "$createdAt" 
-            }
-          },
+          _id: groupBy,
           totalSales: { $sum: "$total" },
           orderCount: { $sum: 1 }
         }
       },
-      { $sort: { "_id": 1 } }
+      { $sort: { _id: 1 } },
+      { $limit: 30 }
     ]);
 
-    return NextResponse.json(salesReport);
+    return NextResponse.json(salesData);
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch sales report" }, { status: 500 });
+    console.error("Sales Report Error:", error);
+    return NextResponse.json({ error: "Failed to fetch sales data" }, { status: 500 });
   }
 }

@@ -11,14 +11,20 @@ interface TopProduct {
   totalRevenue: number;
 }
 
-export default function TopProducts() {
+export default function TopProducts({ startDate, endDate }: { startDate?: string, endDate?: string }) {
   const [products, setProducts] = useState<TopProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTopProducts = async () => {
       try {
-        const res = await fetch("/api/reports/top-products");
+        let url = `/api/reports/top-products`;
+        const params = new URLSearchParams();
+        if (startDate) params.append("startDate", startDate);
+        if (endDate) params.append("endDate", endDate);
+        if (params.toString()) url += `?${params.toString()}`;
+
+        const res = await fetch(url);
         const data = await res.json();
         setProducts(data);
       } catch (error) {
@@ -29,7 +35,7 @@ export default function TopProducts() {
     };
 
     fetchTopProducts();
-  }, []);
+  }, [startDate, endDate]);
 
   if (loading) {
     return <div className="animate-pulse h-64 bg-zinc-100 dark:bg-zinc-800 rounded-2xl" />;

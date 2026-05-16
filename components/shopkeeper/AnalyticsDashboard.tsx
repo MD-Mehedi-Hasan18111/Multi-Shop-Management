@@ -19,7 +19,7 @@ interface SalesData {
   orderCount: number;
 }
 
-export default function AnalyticsDashboard() {
+export default function AnalyticsDashboard({ startDate, endDate }: { startDate?: string, endDate?: string }) {
   const [data, setData] = useState<SalesData[]>([]);
   const [period, setPeriod] = useState("daily");
   const [loading, setLoading] = useState(true);
@@ -28,7 +28,11 @@ export default function AnalyticsDashboard() {
     const fetchSales = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/reports/sales?period=${period}`);
+        let url = `/api/reports/sales?period=${period}`;
+        if (startDate) url += `&startDate=${startDate}`;
+        if (endDate) url += `&endDate=${endDate}`;
+        
+        const res = await fetch(url);
         const result = await res.json();
         setData(result);
       } catch (error) {
@@ -39,7 +43,7 @@ export default function AnalyticsDashboard() {
     };
 
     fetchSales();
-  }, [period]);
+  }, [period, startDate, endDate]);
 
   const totalRevenue = data.reduce((sum, item) => sum + item.totalSales, 0);
   const totalOrders = data.reduce((sum, item) => sum + item.orderCount, 0);

@@ -7,17 +7,19 @@ import {
   LayoutDashboard,
   Package,
   ShoppingCart,
-  BarChart3,
   User,
   Store,
+  Star,
+  Ticket,
 } from "lucide-react";
 
 const navItems = [
   { name: "Dashboard", href: "/shopkeeper/dashboard", icon: LayoutDashboard },
   { name: "My Products", href: "/shopkeeper/products", icon: Package },
   { name: "Orders", href: "/shopkeeper/orders", icon: ShoppingCart },
-  { name: "Analytics", href: "/shopkeeper/analytics", icon: BarChart3 },
-  { name: "Profile", href: "/shopkeeper/profile", icon: User },
+  { name: "Moderate Reviews", href: "/shopkeeper/reviews", icon: Star },
+  { name: "Coupons", href: "/shopkeeper/coupons", icon: Ticket },
+  { name: "Shop Profile", href: "/shopkeeper/profile", icon: User },
 ];
 
 export function Sidebar() {
