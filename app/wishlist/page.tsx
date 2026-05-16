@@ -5,24 +5,17 @@ import { useSession } from "next-auth/react";
 import { Heart, ShoppingCart, Trash2, Share2, Package } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-
-interface Product {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-  stock: number;
-}
-
-interface Wishlist {
-  products: Product[];
-  shareToken: string;
-}
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/lib/redux/store";
+import { removeFromWishlist as removeFromWishlistAction, setWishlist } from "@/lib/redux/wishlistSlice";
+import { addItem } from "@/lib/redux/cartSlice";
 
 export default function WishlistPage() {
   const { data: session } = useSession();
-  const [wishlist, setWishlist] = useState<Wishlist | null>(null);
+  const dispatch = useDispatch();
+  const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
   const [loading, setLoading] = useState(true);
+  const [shareToken, setShareToken] = useState("");
 
   useEffect(() => {
     if (session) {
@@ -34,7 +27,17 @@ export default function WishlistPage() {
     try {
       const res = await fetch("/api/wishlist");
       const data = await res.json();
-      setWishlist(data);
+      if (data && data.products) {
+        const items = data.products.map((p: any) => ({
+          id: p._id,
+          name: p.name,
+          price: p.price,
+          image: p.images?.[0] || "",
+          slug: p.slug
+        }));
+        dispatch(setWishlist(items));
+        setShareToken(data.shareToken);
+      }
     } catch (error) {
       console.error("Failed to fetch wishlist:", error);
     } finally {
@@ -42,24 +45,25 @@ export default function WishlistPage() {
     }
   };
 
-  const removeFromWishlist = async (productId: string) => {
+  const handleRemove = async (productId: string) => {
     try {
       await fetch(`/api/wishlist/${productId}`, { method: "DELETE" });
-      setWishlist((prev) => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          products: prev.products.filter((p) => p._id !== productId),
-        };
-      });
+      dispatch(removeFromWishlistAction(productId));
     } catch (error) {
       console.error("Failed to remove from wishlist:", error);
     }
   };
 
+  const handleAddToCart = (item: any) => {
+    dispatch(addItem({
+      ...item,
+      quantity: 1
+    }));
+  };
+
   const shareWishlist = () => {
-    if (wishlist?.shareToken) {
-      const url = `${window.location.origin}/wishlist/share/${wishlist.shareToken}`;
+    if (shareToken) {
+      const url = `${window.location.origin}/wishlist/share/${shareToken}`;
       navigator.clipboard.writeText(url);
       alert("Shareable link copied to clipboard!");
     }
@@ -70,7 +74,7 @@ export default function WishlistPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
         <Heart size={64} className="text-zinc-200" />
         <h1 className="text-2xl font-bold">Please log in to see your wishlist</h1>
-        <Link href="/api/auth/signin" className="px-6 py-2 bg-blue-600 text-white rounded-xl font-medium">
+        <Link href="/login?callbackUrl=/wishlist" className="px-6 py-2 bg-blue-600 text-white rounded-xl font-medium">
           Sign In
         </Link>
       </div>
@@ -78,12 +82,14 @@ export default function WishlistPage() {
   }
 
   if (loading) {
-    return <div className="p-8 max-w-7xl mx-auto space-y-8 animate-pulse">
-      <div className="h-10 w-48 bg-zinc-100 rounded-lg" />
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map(i => <div key={i} className="h-80 bg-zinc-100 rounded-2xl" />)}
+    return (
+      <div className="p-8 max-w-7xl mx-auto space-y-8 animate-pulse">
+        <div className="h-10 w-48 bg-zinc-100 rounded-lg" />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[1, 2, 3, 4].map(i => <div key={i} className="h-80 bg-zinc-100 rounded-2xl" />)}
+        </div>
       </div>
-    </div>;
+    );
   }
 
   return (
@@ -96,8 +102,8 @@ export default function WishlistPage() {
           </h1>
           <p className="text-zinc-500">Save products you love for later.</p>
         </div>
-        {wishlist && wishlist.products.length > 0 && (
-          <button 
+        {wishlistItems.length > 0 && (
+          <button
             onClick={shareWishlist}
             className="flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-800 rounded-xl text-sm font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
           >
@@ -108,23 +114,23 @@ export default function WishlistPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {wishlist?.products.map((product) => (
-          <div key={product._id} className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+        {wishlistItems.map((product) => (
+          <div key={product.id} className="group relative bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
             <div className="aspect-square bg-zinc-100 dark:bg-zinc-800 relative overflow-hidden">
-              {product.images?.[0] ? (
-                <Image 
-                  src={product.images[0]} 
-                  alt={product.name} 
-                  fill 
-                  className="object-cover group-hover:scale-105 transition-transform duration-500" 
+              {product.image ? (
+                <Image
+                  src={product.image}
+                  alt={product.name}
+                  fill
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-zinc-400">
                   <Package size={48} />
                 </div>
               )}
-              <button 
-                onClick={() => removeFromWishlist(product._id)}
+              <button
+                onClick={() => handleRemove(product.id)}
                 className="absolute top-3 right-3 p-2 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md text-rose-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-500 hover:text-white"
               >
                 <Trash2 size={16} />
@@ -136,13 +142,16 @@ export default function WishlistPage() {
                 <p className="text-lg font-bold text-blue-600">${product.price.toFixed(2)}</p>
               </div>
               <div className="flex gap-2">
-                <Link 
-                  href={`/products/${product._id}`}
+                <Link
+                  href={`/product/${product.slug}`}
                   className="flex-1 text-center py-2 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
                 >
                   View Details
                 </Link>
-                <button className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20">
+                <button
+                  onClick={() => handleAddToCart(product)}
+                  className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-lg shadow-blue-500/20"
+                >
                   <ShoppingCart size={18} />
                 </button>
               </div>
@@ -151,7 +160,7 @@ export default function WishlistPage() {
         ))}
       </div>
 
-      {wishlist?.products.length === 0 && (
+      {wishlistItems.length === 0 && (
         <div className="text-center py-20 space-y-4 bg-zinc-50 dark:bg-zinc-900/50 rounded-3xl border-2 border-dashed border-zinc-200 dark:border-zinc-800">
           <Heart size={48} className="mx-auto text-zinc-300" />
           <p className="text-xl font-medium text-zinc-500">Your wishlist is empty.</p>

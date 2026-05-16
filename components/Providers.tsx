@@ -5,15 +5,18 @@ import { ThemeProvider } from "./ThemeProvider";
 import { Provider } from "react-redux";
 import { store } from "@/lib/redux/store";
 import { CartSyncProvider } from "./CartSyncProvider";
+import { WishlistSyncProvider } from "./WishlistSyncProvider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider>
       <Provider store={store}>
         <CartSyncProvider>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
+          <WishlistSyncProvider>
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
+          </WishlistSyncProvider>
         </CartSyncProvider>
       </Provider>
     </SessionProvider>

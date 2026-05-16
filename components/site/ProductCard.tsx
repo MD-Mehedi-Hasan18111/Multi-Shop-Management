@@ -6,10 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addItem } from "@/lib/redux/cartSlice";
+import { toggleWishlist } from "@/lib/redux/wishlistSlice";
+import { RootState } from "@/lib/redux/store";
+import { cn } from "@/lib/utils";
 
 import { IProduct } from "@/types/product";
+import { useSession } from "next-auth/react";
 
 interface ProductCardProps {
   product: IProduct;
@@ -18,9 +22,48 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const dispatch = useDispatch();
+  const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
+  const isInWishlist = wishlistItems.some((item) => item.id === product._id);
+  const cartItems = useSelector((state: RootState) => state.cart.items);
+  const isInCart = cartItems.some((item) => item.id === product._id);
+
+  const { data: session } = useSession();
+
   const discount = product.comparePrice
     ? Math.round(((product.comparePrice - product.price) / product.comparePrice) * 100)
     : 0;
+
+  const handleWishlist = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!session) {
+      alert("Please log in to manage your wishlist");
+      return;
+    }
+
+    try {
+      if (isInWishlist) {
+        await fetch(`/api/wishlist/${product._id}`, { method: "DELETE" });
+      } else {
+        await fetch("/api/wishlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productId: product._id }),
+        });
+      }
+
+      dispatch(toggleWishlist({
+        id: product._id,
+        name: product.name,
+        price: product.price,
+        image: product.images?.[0] || "",
+        slug: product.slug || ""
+      }));
+    } catch (error) {
+      console.error("Wishlist sync error:", error);
+    }
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -32,6 +75,7 @@ export function ProductCard({ product }: ProductCardProps) {
       price: product.price,
       image: product.images[0] || "",
       quantity: 1,
+      slug: product.slug
     }));
   };
 
@@ -60,8 +104,13 @@ export function ProductCard({ product }: ProductCardProps) {
             <Button size="icon" variant="secondary" className="rounded-full">
               <Eye className="h-4 w-4" />
             </Button>
-            <Button size="icon" variant="secondary" className="rounded-full">
-              <Heart className="h-4 w-4" />
+            <Button
+              size="icon"
+              variant="secondary"
+              className={cn("rounded-full transition-all", isInWishlist ? "bg-red-50 text-red-600" : "")}
+              onClick={handleWishlist}
+            >
+              <Heart className={cn("h-4 w-4", isInWishlist ? "fill-current" : "")} />
             </Button>
           </div>
         </div>
@@ -76,7 +125,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <Link href={`/shops/${product.shop.slug || product.shop._id}`} className="flex items-center gap-1 group/shop">
               {product.shop.logo && (
                 <div className="w-4 h-4 rounded-full overflow-hidden border border-zinc-100">
-                   <img src={product.shop.logo} alt="" className="w-full h-full object-cover" />
+                  <img src={product.shop.logo} alt="" className="w-full h-full object-cover" />
                 </div>
               )}
               <span className="text-[10px] font-bold text-zinc-400 group-hover/shop:text-primary transition-colors truncate max-w-[80px]">
@@ -101,9 +150,15 @@ export function ProductCard({ product }: ProductCardProps) {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button className="w-full" disabled={product.stock === 0} onClick={handleAddToCart}>
+        <Button 
+          className={cn("w-full h-11 rounded-xl font-bold transition-all", 
+            isInCart ? "bg-zinc-100 text-zinc-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/20"
+          )}
+          disabled={product.stock === 0 || isInCart} 
+          onClick={handleAddToCart}
+        >
           <ShoppingCart className="mr-2 h-4 w-4" />
-          Add to Cart
+          {product.stock === 0 ? "Out of Stock" : isInCart ? "Already in Cart" : "Add to Cart"}
         </Button>
       </CardFooter>
     </Card>

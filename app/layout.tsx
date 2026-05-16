@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
 import { Navbar } from "@/components/site/Navbar";
+import BottomNav from "@/components/site/BottomNav";
 import { Footer } from "@/components/site/Footer";
 
 const geistSans = localFont({
@@ -55,10 +56,11 @@ export default function RootLayout({
         <Providers>
           <div className="flex flex-col min-h-screen">
             <Navbar />
-            <main className="flex-grow">
+            <main className="flex-grow pb-20 md:pb-0">
               {children}
             </main>
             <Footer />
+            <BottomNav />
           </div>
         </Providers>
       </body>

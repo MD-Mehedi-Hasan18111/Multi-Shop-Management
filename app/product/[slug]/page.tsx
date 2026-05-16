@@ -102,13 +102,13 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   };
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-7xl">
+    <div className="container mx-auto px-4 py-8 lg:py-12">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="grid lg:grid-cols-2 gap-16">
+      <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
         {/* Gallery */}
         <div className="space-y-6">
           <div className="relative aspect-square rounded-[2.5rem] overflow-hidden bg-zinc-50 border border-zinc-200 dark:border-zinc-800 shadow-2xl">
@@ -148,13 +148,13 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
           <div className="space-y-4">
             <div className="flex flex-wrap items-center gap-3">
               {product.shop && (
-                <Link 
-                  href={`/shops/${product.shop.slug || product.shop._id}`} 
+                <Link
+                  href={`/shops/${product.shop.slug || product.shop._id}`}
                   className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 rounded-2xl group border border-transparent hover:border-blue-500 transition-all"
                 >
                   {product.shop.logo && (
                     <div className="w-6 h-6 rounded-full overflow-hidden">
-                       <img src={product.shop.logo} alt="" className="w-full h-full object-cover" />
+                      <img src={product.shop.logo} alt="" className="w-full h-full object-cover" />
                     </div>
                   )}
                   <span className="text-sm font-bold text-zinc-600 dark:text-zinc-300 group-hover:text-blue-600 transition-colors">
@@ -191,7 +191,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
 
       <div className="mt-24">
         <Tabs defaultValue="description" className="w-full">
-          <TabsList className="w-full justify-start gap-8 border-b border-zinc-100 dark:border-zinc-800 rounded-none bg-transparent h-14 p-0">
+          <TabsList className="w-full justify-start gap-4 lg:gap-8 border-b border-zinc-100 dark:border-zinc-800 rounded-none bg-transparent h-14 p-0 overflow-x-auto overflow-y-hidden no-scrollbar">
             <TabsTrigger value="description" className="text-lg font-bold data-[state=active]:text-blue-600 data-[state=active]:border-b-4 data-[state=active]:border-blue-600 rounded-none px-4 bg-transparent shadow-none">Description</TabsTrigger>
             <TabsTrigger value="reviews" className="text-lg font-bold data-[state=active]:text-blue-600 data-[state=active]:border-b-4 data-[state=active]:border-blue-600 rounded-none px-4 bg-transparent shadow-none">Reviews</TabsTrigger>
             <TabsTrigger value="shipping" className="text-lg font-bold data-[state=active]:text-blue-600 data-[state=active]:border-b-4 data-[state=active]:border-blue-600 rounded-none px-4 bg-transparent shadow-none">Shipping & Returns</TabsTrigger>

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="bg-muted/50 border-t">
+    <footer className="bg-muted/50 border-t md:pb-0 pb-10">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           <div className="space-y-4">
@@ -59,7 +59,7 @@ export function Footer() {
             </div>
           </div>
         </div>
-        
+
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} ShopManager. All rights reserved.
         </div>
