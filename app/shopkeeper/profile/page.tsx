@@ -129,7 +129,7 @@ export default function ShopkeeperProfile() {
 
   return (
     <div className="space-y-10 pb-20">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+      <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
         <div className="space-y-2">
           <h1 className="text-4xl font-black tracking-tight">Shop Profile</h1>
           <p className="text-zinc-500">Customize how your store appears to customers.</p>
@@ -139,7 +139,7 @@ export default function ShopkeeperProfile() {
             size="sm"
             onClick={handleSubmit}
             disabled={loading}
-            className="h-14 px-8 rounded-full shadow-2xl shadow-blue-600/30 hover:scale-105 transition-transform"
+            className="h-10 px-8 rounded-full shadow-2xl shadow-blue-600/30 hover:scale-105 transition-transform"
           >
             {loading ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : "Save Changes"}
           </Button>

@@ -31,7 +31,7 @@ export default function AnalyticsDashboard({ startDate, endDate }: { startDate?:
         let url = `/api/reports/sales?period=${period}`;
         if (startDate) url += `&startDate=${startDate}`;
         if (endDate) url += `&endDate=${endDate}`;
-        
+
         const res = await fetch(url);
         const result = await res.json();
         setData(result);
@@ -120,8 +120,10 @@ export default function AnalyticsDashboard({ startDate, endDate }: { startDate?:
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fill: "#71717a" }}
+                  tickFormatter={(value) => `BDT ${value.toLocaleString()}`}
                 />
                 <Tooltip
+                  formatter={(value) => [`BDT ${value?.toLocaleString()}`, "Total Sales"]}
                   contentStyle={{
                     borderRadius: "12px",
                     border: "none",
@@ -131,6 +133,7 @@ export default function AnalyticsDashboard({ startDate, endDate }: { startDate?:
                 <Line
                   type="monotone"
                   dataKey="totalSales"
+                  name="Total Sales"
                   stroke="#3b82f6"
                   strokeWidth={3}
                   dot={{ r: 4, fill: "#3b82f6", strokeWidth: 2, stroke: "#fff" }}

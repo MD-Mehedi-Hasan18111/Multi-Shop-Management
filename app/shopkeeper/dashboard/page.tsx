@@ -163,7 +163,7 @@ export default function ShopkeeperDashboard() {
                         <TableCell className="font-bold pl-8 py-5">{product.name}</TableCell>
                         <TableCell>
                           <Badge variant="outline" className={`rounded-lg px-3 py-1 font-bold ${product.stock <= 2 ? 'bg-red-50 text-red-700 border-red-200' : 'bg-orange-50 text-orange-700 border-orange-200'}`}>
-                            {product.stock} units
+                            {product.stock}
                           </Badge>
                         </TableCell>
                         <TableCell className="pr-8 text-right">
