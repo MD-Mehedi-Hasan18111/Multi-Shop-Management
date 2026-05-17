@@ -49,19 +49,31 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { userId, role } = await req.json();
-    if (!userId || !roles.includes(role)) {
-      return NextResponse.json({ error: "A valid user and role are required" }, { status: 400 });
+    const { userId, role, isActive } = await req.json();
+    if (!userId) {
+      return NextResponse.json({ error: "A valid user is required" }, { status: 400 });
     }
 
-    if (userId === session.user.id && role !== "admin") {
+    if (role !== undefined && !roles.includes(role)) {
+      return NextResponse.json({ error: "A valid role is required" }, { status: 400 });
+    }
+
+    if (userId === session.user.id && role !== undefined && role !== "admin") {
       return NextResponse.json({ error: "You cannot remove your own admin role" }, { status: 400 });
     }
 
+    if (userId === session.user.id && isActive === false) {
+      return NextResponse.json({ error: "You cannot deactivate your own account" }, { status: 400 });
+    }
+
     await dbConnect();
+    const update: Record<string, any> = {};
+    if (role !== undefined) update.role = role;
+    if (typeof isActive === "boolean") update.isActive = isActive;
+
     const user = await User.findByIdAndUpdate(
       userId,
-      { role },
+      update,
       { new: true, runValidators: true }
     ).select("-password");
 

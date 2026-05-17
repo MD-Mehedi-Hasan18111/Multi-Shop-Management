@@ -10,7 +10,9 @@ export async function GET(
 ) {
   try {
     await dbConnect();
-    const product = await Product.findById(params.id).populate("category", "name slug");
+    const product = await Product.findById(params.id)
+      .populate("category", "name slug")
+      .populate("shopkeeper", "name email");
     if (!product) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
@@ -50,7 +52,9 @@ export async function PATCH(
       params.id,
       { $set: data },
       { new: true, runValidators: true }
-    );
+    )
+      .populate("category", "name slug")
+      .populate("shopkeeper", "name email");
 
     return NextResponse.json(updatedProduct);
   } catch (error: any) {

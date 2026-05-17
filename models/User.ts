@@ -27,11 +27,19 @@ const UserSchema = new Schema(
       type: String,
       default: '',
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
   }
 );
+
+if (process.env.NODE_ENV === 'development' && models.User) {
+  delete (models as any).User;
+}
 
 const User = models.User || model('User', UserSchema);
 

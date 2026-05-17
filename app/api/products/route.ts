@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Product from "@/models/Product";
 import Category from "@/models/Category";
+import ShopSettings from "@/models/ShopSettings";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import mongoose from "mongoose";
@@ -73,6 +74,14 @@ export async function POST(req: Request) {
 
     await dbConnect();
     const data = await req.json();
+
+    const shopSettings = await ShopSettings.findOne({ shopkeeper: session.user.id });
+    if (shopSettings?.isBlocked) {
+      return NextResponse.json(
+        { error: "This shop is blocked from selling. Contact admin support." },
+        { status: 403 }
+      );
+    }
 
     // ensure slug is unique
     let slug = data.slug || data.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '');

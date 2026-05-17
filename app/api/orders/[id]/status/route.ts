@@ -37,7 +37,9 @@ export async function PUT(
       params.id,
       { status },
       { new: true }
-    ).populate("user");
+    )
+      .populate("user", "name email")
+      .populate("shopkeeper", "name email");
 
     // Trigger External Notifications
     await sendStatusUpdateEmail(order.user.email, order.orderNumber, status);

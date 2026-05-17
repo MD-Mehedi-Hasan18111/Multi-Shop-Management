@@ -61,6 +61,20 @@ export default function UsersPage() {
     }
   }
 
+  async function toggleUser(user: any) {
+    const res = await fetch("/api/admin/users", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: user._id, isActive: user.isActive === false }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setUsers((current) => current.map((item) => (item._id === updated._id ? updated : item)));
+    } else {
+      alert((await res.json()).error || "Failed to update user");
+    }
+  }
+
   return (
     <div className="grid gap-4 md:gap-8">
       <div>
@@ -106,6 +120,7 @@ export default function UsersPage() {
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="hidden md:table-cell">Joined</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -118,30 +133,40 @@ export default function UsersPage() {
                   <TableCell>
                     <Badge variant={user.role === "admin" ? "default" : "secondary"}>{user.role}</Badge>
                   </TableCell>
+                  <TableCell>
+                    <Badge variant={user.isActive === false ? "destructive" : "secondary"}>
+                      {user.isActive === false ? "Inactive" : "Active"}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="hidden md:table-cell">
                     {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
                   </TableCell>
                   <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          Set role <ChevronDown className="ml-2 h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        {roles.map((item) => (
-                          <DropdownMenuItem key={item} onClick={() => updateRole(user, item)}>
-                            {item}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => toggleUser(user)}>
+                        {user.isActive === false ? "Activate" : "Deactivate"}
+                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            Set role <ChevronDown className="ml-2 h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {roles.map((item) => (
+                            <DropdownMenuItem key={item} onClick={() => updateRole(user, item)}>
+                              {item}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
               {!loading && users.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="py-10 text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
                     No users found.
                   </TableCell>
                 </TableRow>

@@ -14,12 +14,26 @@ export default function AccountPage() {
   const { data: session, status, update } = useSession();
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
+  const [shopBlocked, setShopBlocked] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login?callbackUrl=/account");
     }
   }, [status, router]);
+
+  useEffect(() => {
+    if (session && (session.user as any)?.role === "shopkeeper") {
+      fetch("/api/shopkeeper/settings")
+        .then((res) => res.json())
+        .then((data) => {
+          if (!data.error && data.isBlocked === true) {
+            setShopBlocked(true);
+          }
+        })
+        .catch((err) => console.error("Error fetching shop settings:", err));
+    }
+  }, [session]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -129,22 +143,39 @@ export default function AccountPage() {
 
       {/* Role-specific panel link */}
       {((session.user as any)?.role === "admin" || (session.user as any)?.role === "shopkeeper") && (
-        <Card className="rounded-2xl">
+        <Card className={`rounded-2xl transition-all ${shopBlocked ? "opacity-65 cursor-not-allowed border-red-200" : ""}`}>
           <CardContent className="p-6">
-            <Link
-              href={(session.user as any)?.role === "admin" ? "/admin/dashboard" : "/shopkeeper/dashboard"}
-              className="flex items-center gap-4 group"
-            >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition">
-                <Store className="h-6 w-6 text-primary" />
+            {shopBlocked ? (
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl bg-red-50 dark:bg-red-950/20 flex items-center justify-center text-red-600">
+                  <Store className="h-6 w-6" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-lg text-zinc-500">Shopkeeper Panel</p>
+                    <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
+                      Disabled
+                    </span>
+                  </div>
+                  <p className="text-sm text-red-600 font-semibold mt-0.5">Your shop is disabled.</p>
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="font-bold text-lg">
-                  {(session.user as any)?.role === "admin" ? "Admin Panel" : "Shopkeeper Panel"}
-                </p>
-                <p className="text-sm text-muted-foreground">Go to your management dashboard</p>
-              </div>
-            </Link>
+            ) : (
+              <Link
+                href={(session.user as any)?.role === "admin" ? "/admin/dashboard" : "/shopkeeper/dashboard"}
+                className="flex items-center gap-4 group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition">
+                  <Store className="h-6 w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-lg">
+                    {(session.user as any)?.role === "admin" ? "Admin Panel" : "Shopkeeper Panel"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">Go to your management dashboard</p>
+                </div>
+              </Link>
+            )}
           </CardContent>
         </Card>
       )}

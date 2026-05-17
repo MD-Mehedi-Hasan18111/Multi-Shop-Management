@@ -22,6 +22,7 @@ import {
   AlertTriangle,
   TrendingUp,
 } from "lucide-react";
+import { formatBDT } from "@/lib/currency";
 
 type Overview = {
   stats: Record<string, number | null>;
@@ -29,7 +30,6 @@ type Overview = {
   topProducts: any[];
 };
 
-const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const number = new Intl.NumberFormat("en-US");
 
 function changeText(value: number | null | undefined) {
@@ -58,7 +58,7 @@ export default function DashboardPage() {
   const cards = [
     {
       title: "Total Revenue",
-      value: money.format(Number(stats.totalRevenue || 0)),
+      value: formatBDT(Number(stats.totalRevenue || 0)),
       helper: changeText(stats.revenueChange as number | null),
       icon: DollarSign,
     },
@@ -100,7 +100,7 @@ export default function DashboardPage() {
     },
     {
       title: "Average Order",
-      value: money.format(Number(stats.averageOrderValue || 0)),
+      value: formatBDT(Number(stats.averageOrderValue || 0)),
       helper: "Across all shops",
       icon: TrendingUp,
     },
@@ -154,7 +154,7 @@ export default function DashboardPage() {
                 {(overview?.recentOrders || []).map((order) => (
                   <TableRow key={order._id}>
                     <TableCell className="font-medium">
-                      <Link href={`/tracking/${order._id}`} className="hover:underline">
+                      <Link href={`/admin/orders?order=${order._id}`} className="hover:underline">
                         {order.orderNumber}
                       </Link>
                     </TableCell>
@@ -165,7 +165,7 @@ export default function DashboardPage() {
                         {order.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">{money.format(order.total || 0)}</TableCell>
+                    <TableCell className="text-right">{formatBDT(order.total || 0)}</TableCell>
                   </TableRow>
                 ))}
                 {!loading && overview?.recentOrders.length === 0 && (
@@ -191,7 +191,7 @@ export default function DashboardPage() {
                   <p className="truncate font-medium">{product.name}</p>
                   <p className="text-sm text-muted-foreground">{number.format(product.sold)} sold</p>
                 </div>
-                <p className="font-semibold">{money.format(product.revenue || 0)}</p>
+                <p className="font-semibold">{formatBDT(product.revenue || 0)}</p>
               </div>
             ))}
             {!loading && overview?.topProducts.length === 0 && (

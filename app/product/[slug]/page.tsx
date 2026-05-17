@@ -9,6 +9,7 @@ import Product from "@/models/Product";
 import ProductDetailsClient from "@/components/site/ProductDetailsClient";
 import { Metadata } from "next";
 import { IProduct } from "@/types/product";
+import { Button } from "@/components/ui/button";
 
 
 // Dynamic import for ReviewSection to reduce initial bundle size
@@ -73,6 +74,23 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
   const { attachShopInfo } = await import("@/lib/shop-utils");
   const [productWithShop] = await attachShopInfo([productData]);
   const product = JSON.parse(JSON.stringify(productWithShop));
+
+  if (product.shop?.isBlocked === true) {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center space-y-6 min-h-[calc(100vh-15rem)] flex flex-col justify-center items-center">
+        <div className="w-20 h-20 bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center text-red-600 shadow-xl shadow-red-200/50 dark:shadow-none">
+          <AlertCircle size={40} />
+        </div>
+        <h1 className="text-4xl font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100 italic">Product Not Available</h1>
+        <p className="text-zinc-500 max-w-md mx-auto font-medium">The product &quot;{product.name}&quot; belongs to a shop that is currently disabled or not available. Please explore other available products.</p>
+        <div className="pt-4">
+          <Button asChild className="rounded-full px-8 h-12 text-sm font-bold bg-blue-600 hover:bg-blue-700">
+            <Link href="/products">Browse Other Products</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // JSON-LD Structured Data
   const jsonLd = {

@@ -21,7 +21,8 @@ export async function attachShopInfo(products: any[]) {
       _id: setting._id.toString(),
       shopName: setting.shopName,
       logo: setting.logo,
-      slug: setting.slug
+      slug: setting.slug,
+      isBlocked: setting.isBlocked
     });
   });
 

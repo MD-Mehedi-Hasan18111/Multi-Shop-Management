@@ -20,29 +20,40 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Search } from "lucide-react";
+import { formatBDT } from "@/lib/currency";
 
-const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 const statuses = ["pending", "paid", "processing", "shipped", "delivered", "cancelled"];
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
+  const [shops, setShops] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
+  const [shopkeeper, setShopkeeper] = useState("");
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
+    const params = new URLSearchParams();
+    if (shopkeeper) params.set("shopkeeper", shopkeeper);
     try {
-      const res = await fetch("/api/orders");
+      const res = await fetch(`/api/orders?${params.toString()}`);
       setOrders(res.ok ? await res.json() : []);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [shopkeeper]);
 
   useEffect(() => {
     loadOrders();
   }, [loadOrders]);
+
+  useEffect(() => {
+    fetch("/api/admin/shops")
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setShops)
+      .catch(() => setShops([]));
+  }, []);
 
   const filteredOrders = useMemo(() => {
     const term = search.toLowerCase();
@@ -56,6 +67,8 @@ export default function OrdersPage() {
       return matchesStatus && matchesSearch;
     });
   }, [orders, search, status]);
+
+  const shopLabel = shops.find((shop) => shop.shopkeeper?._id === shopkeeper)?.shopName;
 
   async function updateStatus(order: any, nextStatus: string) {
     const res = await fetch(`/api/orders/${order._id}/status`, {
@@ -81,7 +94,7 @@ export default function OrdersPage() {
       <Card>
         <CardHeader className="gap-4">
           <CardTitle>All Orders</CardTitle>
-          <div className="grid gap-2 md:grid-cols-[minmax(240px,1fr)_180px]">
+          <div className="grid gap-2 md:grid-cols-[minmax(240px,1fr)_180px_180px]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -107,6 +120,25 @@ export default function OrdersPage() {
                 ))}
               </DropdownMenuContent>
             </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="justify-between">
+                  {shopLabel || "All shops"}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => setShopkeeper("")}>All shops</DropdownMenuItem>
+                {shops.map((shop) => (
+                  <DropdownMenuItem
+                    key={shop._id}
+                    onClick={() => setShopkeeper(shop.shopkeeper?._id || "")}
+                  >
+                    {shop.shopName}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         <CardContent>
@@ -115,6 +147,7 @@ export default function OrdersPage() {
               <TableRow>
                 <TableHead>Order ID</TableHead>
                 <TableHead>Customer</TableHead>
+                <TableHead className="hidden lg:table-cell">Shop</TableHead>
                 <TableHead className="hidden md:table-cell">Date</TableHead>
                 <TableHead>Total</TableHead>
                 <TableHead>Status</TableHead>
@@ -129,10 +162,11 @@ export default function OrdersPage() {
                     <div>{order.user?.name || order.shippingAddress?.name || "Customer"}</div>
                     <div className="text-xs text-muted-foreground">{order.user?.email}</div>
                   </TableCell>
+                  <TableCell className="hidden lg:table-cell">{order.shopkeeper?.name || "Shop"}</TableCell>
                   <TableCell className="hidden md:table-cell">
                     {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
                   </TableCell>
-                  <TableCell>{money.format(order.total || 0)}</TableCell>
+                  <TableCell>{formatBDT(order.total || 0)}</TableCell>
                   <TableCell>
                     <Badge variant={order.status === "cancelled" ? "destructive" : "secondary"}>
                       {order.status}
@@ -158,7 +192,7 @@ export default function OrdersPage() {
               ))}
               {!loading && filteredOrders.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                     No orders found.
                   </TableCell>
                 </TableRow>

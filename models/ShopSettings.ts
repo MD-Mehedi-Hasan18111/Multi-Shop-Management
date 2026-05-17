@@ -49,6 +49,10 @@ const ShopSettingsSchema = new Schema(
       type: String,
       default: '',
     },
+    isBlocked: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

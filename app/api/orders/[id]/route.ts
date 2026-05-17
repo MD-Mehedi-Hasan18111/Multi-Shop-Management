@@ -21,7 +21,8 @@ export async function GET(
         path: "items.product",
         select: "name images price slug"
       })
-      .populate("user", "name email");
+      .populate("user", "name email")
+      .populate("shopkeeper", "name email");
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });

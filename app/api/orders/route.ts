@@ -3,6 +3,7 @@ import dbConnect from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 import User from "@/models/User";
+import ShopSettings from "@/models/ShopSettings";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { sendLowStockAlertEmail } from "@/lib/notifications";
@@ -43,6 +44,11 @@ export async function POST(req: Request) {
 
     // 3. Create an order for each shopkeeper
     for (const [shopkeeperId, items] of Object.entries(itemsByShopkeeper)) {
+      const shopSettings = await ShopSettings.findOne({ shopkeeper: shopkeeperId });
+      if (shopSettings?.isBlocked) {
+        throw new Error(`${shopSettings.shopName || "This shop"} is blocked from selling`);
+      }
+
       const orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
       
       const shopkeeperTotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0);
@@ -99,16 +105,20 @@ export async function POST(req: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     await dbConnect();
     
-    let query = {};
+    const { searchParams } = new URL(req.url);
+    const shopkeeper = searchParams.get("shopkeeper");
+
+    let query: Record<string, any> = {};
     if (session.user.role === "admin") {
       query = {};
+      if (shopkeeper) query.shopkeeper = shopkeeper;
     } else if (session.user.role === "shopkeeper") {
       query = { shopkeeper: session.user.id };
     } else {
@@ -117,6 +127,7 @@ export async function GET() {
 
     const orders = await Order.find(query)
       .populate("user", "name email")
+      .populate("shopkeeper", "name email")
       .sort({ createdAt: -1 });
     
     return NextResponse.json(orders);

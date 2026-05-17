@@ -22,22 +22,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ChevronDown, Eye, Package, Search, Trash2 } from "lucide-react";
-
-const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+import { formatBDT } from "@/lib/currency";
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
+  const [shops, setShops] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
+  const [shopkeeper, setShopkeeper] = useState("");
 
   useEffect(() => {
     fetch("/api/categories")
       .then((res) => (res.ok ? res.json() : []))
       .then(setCategories)
       .catch(() => setCategories([]));
+    fetch("/api/admin/shops")
+      .then((res) => (res.ok ? res.json() : []))
+      .then(setShops)
+      .catch(() => setShops([]));
   }, []);
 
   const loadProducts = useCallback(async () => {
@@ -46,13 +51,14 @@ export default function ProductsPage() {
     if (search) params.set("search", search);
     if (category) params.set("category", category);
     if (status) params.set("status", status);
+    if (shopkeeper) params.set("shopkeeper", shopkeeper);
     try {
       const res = await fetch(`/api/products?${params.toString()}`);
       setProducts(res.ok ? await res.json() : []);
     } finally {
       setLoading(false);
     }
-  }, [category, search, status]);
+  }, [category, search, shopkeeper, status]);
 
   useEffect(() => {
     const timer = setTimeout(loadProducts, 300);
@@ -79,6 +85,7 @@ export default function ProductsPage() {
   }
 
   const categoryLabel = categories.find((item) => item._id === category || item.slug === category)?.name;
+  const shopLabel = shops.find((shop) => shop.shopkeeper?._id === shopkeeper)?.shopName;
 
   return (
     <div className="grid gap-4 md:gap-8">
@@ -95,7 +102,7 @@ export default function ProductsPage() {
       <Card>
         <CardHeader className="gap-4">
           <CardTitle>Product Inventory</CardTitle>
-          <div className="grid gap-2 md:grid-cols-[minmax(240px,1fr)_180px_180px]">
+          <div className="grid gap-2 md:grid-cols-[minmax(240px,1fr)_180px_180px_180px]">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
@@ -136,6 +143,25 @@ export default function ProductsPage() {
                 <DropdownMenuItem onClick={() => setStatus("out-of-stock")}>Out of stock</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="justify-between">
+                  {shopLabel || "All shops"}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => setShopkeeper("")}>All shops</DropdownMenuItem>
+                {shops.map((shop) => (
+                  <DropdownMenuItem
+                    key={shop._id}
+                    onClick={() => setShopkeeper(shop.shopkeeper?._id || "")}
+                  >
+                    {shop.shopName}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </CardHeader>
         <CardContent>
@@ -171,7 +197,7 @@ export default function ProductsPage() {
                   </TableCell>
                   <TableCell className="hidden lg:table-cell">{product.shopkeeper?.name || "Unknown"}</TableCell>
                   <TableCell className="hidden md:table-cell">{product.category?.name || "Uncategorized"}</TableCell>
-                  <TableCell>{money.format(product.price || 0)}</TableCell>
+                  <TableCell>{formatBDT(product.price || 0)}</TableCell>
                   <TableCell>{product.stock}</TableCell>
                   <TableCell>
                     <Badge variant={!product.isActive || product.stock === 0 ? "destructive" : "secondary"}>
@@ -184,7 +210,7 @@ export default function ProductsPage() {
                         {product.isActive ? "Disable" : "Enable"}
                       </Button>
                       <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/product/${product.slug}`}>
+                        <Link href={`/admin/products/${product._id}`}>
                           <Eye className="h-4 w-4" />
                         </Link>
                       </Button>

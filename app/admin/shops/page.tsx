@@ -15,8 +15,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Search } from "lucide-react";
-
-const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+import { formatBDT } from "@/lib/currency";
 
 export default function ShopsPage() {
   const [shops, setShops] = useState<any[]>([]);
@@ -39,6 +38,26 @@ export default function ShopsPage() {
     const timer = setTimeout(loadShops, 300);
     return () => clearTimeout(timer);
   }, [loadShops]);
+
+  async function toggleShop(shop: any) {
+    const res = await fetch("/api/admin/shops", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ shopId: shop._id, isBlocked: !shop.isBlocked }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setShops((current) =>
+        current.map((item) =>
+          item._id === updated._id
+            ? { ...item, isBlocked: updated.isBlocked, shopkeeper: updated.shopkeeper }
+            : item
+        )
+      );
+    } else {
+      alert((await res.json()).error || "Failed to update shop");
+    }
+  }
 
   return (
     <div className="grid gap-4 md:gap-8">
@@ -69,6 +88,7 @@ export default function ShopsPage() {
                 <TableHead>Products</TableHead>
                 <TableHead>Orders</TableHead>
                 <TableHead>Revenue</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -89,21 +109,27 @@ export default function ShopsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>{shop.orderCount}</TableCell>
-                  <TableCell>{money.format(shop.revenue || 0)}</TableCell>
+                  <TableCell>{formatBDT(shop.revenue || 0)}</TableCell>
+                  <TableCell>
+                    <Badge variant={shop.isBlocked ? "destructive" : "secondary"}>
+                      {shop.isBlocked ? "Blocked" : "Selling"}
+                    </Badge>
+                  </TableCell>
                   <TableCell className="text-right">
-                    {shop.slug ? (
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/shops/${shop.slug}`}>View</Link>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="sm" onClick={() => toggleShop(shop)}>
+                        {shop.isBlocked ? "Unblock" : "Block"}
                       </Button>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">No public page</span>
-                    )}
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/admin/shops/${shop._id}`}>View</Link>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
               {!loading && shops.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                     No shops found.
                   </TableCell>
                 </TableRow>

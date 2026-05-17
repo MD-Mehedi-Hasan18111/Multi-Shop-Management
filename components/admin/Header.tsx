@@ -1,45 +1,42 @@
 "use client";
 
-import { Bell, Store, UserCircle } from "lucide-react";
+import { Bell, Home, UserCircle } from "lucide-react";
+import { signOut } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRouter } from "next/navigation";
 
 export function Header() {
+  const navigate = useRouter();
   return (
-    <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
-      <div className="flex flex-1 items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-        {/* Shop Selector mock */}
-        <Button variant="outline" size="sm" className="hidden md:flex">
-          <Store className="mr-2 h-4 w-4" />
-          Main Store
+    <header className="flex h-14 shrink-0 items-center border-b bg-background px-4 lg:px-6">
+      <div className="flex w-full items-center gap-3">
+        <Button variant="outline" size="sm" className="h-9" onClick={() => navigate.push("/")}>
+          <Home className="mr-2 h-4 w-4" />
+          Back to Home
         </Button>
-        <div className="ml-auto flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="relative">
+        <div className="ml-auto flex h-9 items-center gap-2">
+          <Button variant="ghost" size="icon" className="relative h-9 w-9">
             <Bell className="h-5 w-5" />
             <span className="absolute right-1.5 top-1.5 flex h-2 w-2 rounded-full bg-destructive"></span>
             <span className="sr-only">Toggle notifications</span>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
+              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
                 <UserCircle className="h-6 w-6" />
                 <span className="sr-only">Toggle user menu</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Logout</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/login" })}>
+                Logout
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

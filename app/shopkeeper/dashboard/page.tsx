@@ -18,6 +18,7 @@ export default function ShopkeeperDashboard() {
   const [startDate, setStartDate] = useState(lastYear);
   const [endDate, setEndDate] = useState(today);
   const [lowStock, setLowStock] = useState<any[]>([]);
+  const [shop, setShop] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [exporting, setExporting] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -35,10 +36,23 @@ export default function ShopkeeperDashboard() {
         setLoading(false);
       }
     };
+    
+    const fetchShop = async () => {
+      try {
+        const res = await fetch("/api/shopkeeper/settings");
+        const data = await res.json();
+        if (!data.error) setShop(data);
+      } catch (error) {
+        console.error("Failed to fetch shop settings:", error);
+      }
+    };
+
     fetchLowStock();
+    fetchShop();
   }, []);
 
   const handleExport = async () => {
+    if (shop?.isBlocked) return;
     try {
       setExporting(true);
       const res = await fetch("/api/shopkeeper/products/bulk");
@@ -57,6 +71,7 @@ export default function ShopkeeperDashboard() {
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (shop?.isBlocked) return;
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -88,8 +103,21 @@ export default function ShopkeeperDashboard() {
       setImporting(false);
     }
   };
+
+  const isBlocked = shop?.isBlocked === true;
+
   return (
     <div className="space-y-6 lg:space-y-10 pb-20 overflow-x-hidden max-w-full">
+      {isBlocked && (
+        <div className="flex items-center gap-4 p-6 bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300 rounded-[2rem] border border-red-100 dark:border-red-900/50 shadow-lg shadow-red-100/50 dark:shadow-none animate-pulse">
+          <AlertTriangle className="h-8 w-8 shrink-0 text-red-600" />
+          <div>
+            <h3 className="font-black uppercase tracking-wider text-sm">Store Blocked / Disabled</h3>
+            <p className="text-xs font-semibold opacity-90 mt-1">Your shop &quot;{shop?.shopName || 'Store'}&quot; has been disabled by administrators. Selling, importing, and updating products are currently restricted. Please contact support.</p>
+          </div>
+        </div>
+      )}
+
       {/* Header & Global Actions */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-1">
@@ -115,7 +143,7 @@ export default function ShopkeeperDashboard() {
             />
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
-            <Button variant="outline" size="sm" className="flex-1 sm:flex-none rounded-xl gap-2 font-bold h-10 px-4" onClick={handleExport} disabled={exporting}>
+            <Button variant="outline" size="sm" className="flex-1 sm:flex-none rounded-xl gap-2 font-bold h-10 px-4" onClick={handleExport} disabled={exporting || isBlocked}>
               {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download size={16} />} Export
             </Button>
           </div>

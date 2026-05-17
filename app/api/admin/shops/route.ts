@@ -89,3 +89,33 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Failed to fetch shops" }, { status: 500 });
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { shopId, isBlocked } = await req.json();
+    if (!shopId || typeof isBlocked !== "boolean") {
+      return NextResponse.json({ error: "A valid shop and block status are required" }, { status: 400 });
+    }
+
+    await dbConnect();
+    const shop = await ShopSettings.findByIdAndUpdate(
+      shopId,
+      { isBlocked },
+      { new: true, runValidators: true }
+    ).populate("shopkeeper", "name email role");
+
+    if (!shop) {
+      return NextResponse.json({ error: "Shop not found" }, { status: 404 });
+    }
+
+    return NextResponse.json(shop);
+  } catch (error) {
+    console.error("Update Admin Shop Error:", error);
+    return NextResponse.json({ error: "Failed to update shop" }, { status: 500 });
+  }
+}

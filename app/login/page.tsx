@@ -32,7 +32,11 @@ function LoginForm() {
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
+        if (result.error.includes("Disabled") || result.error.includes("deactivated")) {
+          setError("Your account is Disabled. Contact us.");
+        } else {
+          setError("Invalid email or password");
+        }
       } else {
         window.location.assign(callbackUrl);
       }

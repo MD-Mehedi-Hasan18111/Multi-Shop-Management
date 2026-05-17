@@ -31,6 +31,23 @@ export default async function ShopDetailsPage({ params }: { params: { slug: stri
 
   const shop = JSON.parse(JSON.stringify(shopData));
 
+  if (shop.isBlocked) {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center space-y-6 min-h-[calc(100vh-15rem)] flex flex-col justify-center items-center">
+        <div className="w-20 h-20 bg-red-50 dark:bg-red-950/30 rounded-full flex items-center justify-center text-red-600 shadow-xl shadow-red-200/50 dark:shadow-none">
+          <Store size={40} />
+        </div>
+        <h1 className="text-4xl font-black uppercase tracking-tight text-zinc-900 dark:text-zinc-100 italic">Shop Temporarily Disabled</h1>
+        <p className="text-zinc-500 max-w-md mx-auto font-medium">The store &quot;{shop.shopName}&quot; is currently disabled and not accepting any new orders. Please browse other partner shops.</p>
+        <div className="pt-4">
+          <Button asChild className="rounded-full px-8 h-12 text-sm font-bold bg-blue-600 hover:bg-blue-700">
+            <Link href="/shops">Browse Other Shops</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // Fetch products for this shop
   const productsData = await Product.find({ shopkeeper: shop.shopkeeper, isActive: true })
     .populate("category", "name slug")
