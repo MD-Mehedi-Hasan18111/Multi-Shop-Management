@@ -70,12 +70,12 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl">
-          <TabsTrigger value="general" className="rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">General</TabsTrigger>
-          <TabsTrigger value="appearance" className="rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">Appearance</TabsTrigger>
-          <TabsTrigger value="homepage" className="rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">Homepage</TabsTrigger>
-          <TabsTrigger value="social" className="rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">Social Links</TabsTrigger>
-          <TabsTrigger value="seo" className="rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">SEO Settings</TabsTrigger>
+        <TabsList className="flex w-full overflow-x-auto whitespace-nowrap scrollbar-none bg-zinc-100 dark:bg-zinc-800 p-1 rounded-xl gap-1">
+          <TabsTrigger value="general" className="flex-1 min-w-[100px] rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">General</TabsTrigger>
+          <TabsTrigger value="appearance" className="flex-1 min-w-[100px] rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">Appearance</TabsTrigger>
+          <TabsTrigger value="homepage" className="flex-1 min-w-[100px] rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">Homepage</TabsTrigger>
+          <TabsTrigger value="social" className="flex-1 min-w-[120px] rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">Social Links</TabsTrigger>
+          <TabsTrigger value="seo" className="flex-1 min-w-[120px] rounded-lg font-bold data-[state=active]:bg-white dark:data-[state=active]:bg-zinc-700 data-[state=active]:text-blue-600">SEO Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general" className="mt-6">
