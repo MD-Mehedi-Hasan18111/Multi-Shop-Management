@@ -8,6 +8,7 @@ import Product from "@/models/Product";
 import Category from "@/models/Category";
 import User from "@/models/User";
 import ShopSettings from "@/models/ShopSettings";
+import AppSettings from "@/models/AppSettings";
 
 import { Metadata } from "next";
 
@@ -20,13 +21,12 @@ export default async function Home() {
   await dbConnect();
   
   // Ensure models are registered (Next.js can sometimes tree-shake unused imports)
-  const _models = { Product, Category, User, ShopSettings };
+  const _models = { Product, Category, User, ShopSettings, AppSettings };
 
-  // Fetch admin settings for dynamic sections
-  const adminUser = await User.findOne({ role: "admin" });
-  let appSettings = null;
-  if (adminUser) {
-    appSettings = await ShopSettings.findOne({ shopkeeper: adminUser._id }).lean();
+  // Fetch global admin app settings for dynamic sections
+  let appSettings = await AppSettings.findOne().lean();
+  if (!appSettings) {
+    appSettings = await AppSettings.create({});
   }
   const appSettingsClean = appSettings ? JSON.parse(JSON.stringify(appSettings)) : null;
 

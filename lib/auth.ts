@@ -64,8 +64,9 @@ export const authOptions: NextAuthOptions = {
       }
       
       // Handle session updates
-      if (trigger === "update" && session?.avatar) {
-        token.avatar = session.avatar;
+      if (trigger === "update") {
+        if (session?.avatar !== undefined) token.avatar = session.avatar;
+        if (session?.role !== undefined) token.role = session.role;
       }
       
       return token;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -49,6 +49,7 @@ export default function AdminSellerRequestsPage() {
     loadRequests();
   }, []);
 
+  const [clickStat, setClickStat] = useState<'approved' | 'rejected' | null>(null);
   const handleAction = async (requestId: string, action: "approved" | "rejected") => {
     try {
       setProcessingId(requestId);
@@ -76,6 +77,7 @@ export default function AdminSellerRequestsPage() {
       alert("An error occurred while processing this request.");
     } finally {
       setProcessingId(null);
+      setClickStat(null);
     }
   };
 
@@ -273,23 +275,29 @@ export default function AdminSellerRequestsPage() {
           {previewRequest && previewRequest.status === "pending" && (
             <div className="flex gap-4 pt-4 border-t mt-4">
               <Button
-                onClick={() => handleAction(previewRequest._id, "approved")}
+                onClick={() => {
+                  handleAction(previewRequest._id, "approved");
+                  setClickStat("approved");
+                }}
                 disabled={processingId !== null}
                 className="flex-1 rounded-2xl h-12 font-bold bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/20"
               >
-                {processingId === previewRequest._id ? (
+                {processingId === previewRequest._id && clickStat === "approved" ? (
                   <Loader2 className="w-4 h-4 animate-spin mx-auto" />
                 ) : (
                   "Approve Seller Application"
                 )}
               </Button>
               <Button
-                onClick={() => handleAction(previewRequest._id, "rejected")}
+                onClick={() => {
+                  handleAction(previewRequest._id, "rejected");
+                  setClickStat("rejected");
+                }}
                 disabled={processingId !== null}
                 variant="outline"
                 className="flex-1 rounded-2xl h-12 font-bold text-destructive hover:bg-destructive/10 border-destructive/20"
               >
-                {processingId === previewRequest._id ? (
+                {processingId === previewRequest._id && clickStat === "rejected" ? (
                   <Loader2 className="w-4 h-4 animate-spin mx-auto" />
                 ) : (
                   "Reject"

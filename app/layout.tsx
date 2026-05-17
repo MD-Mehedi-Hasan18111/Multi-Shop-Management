@@ -10,6 +10,7 @@ import { ServiceWorkerCleanup } from "@/components/ServiceWorkerCleanup";
 import dbConnect from "@/lib/mongodb";
 import ShopSettings from "@/models/ShopSettings";
 import User from "@/models/User";
+import AppSettings from "@/models/AppSettings";
 
 function hexToHsl(hex: string) {
   hex = hex.replace(/^#/, "");
@@ -86,10 +87,9 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   await dbConnect();
-  const adminUser = await User.findOne({ role: "admin" });
-  let appSettings = null;
-  if (adminUser) {
-    appSettings = await ShopSettings.findOne({ shopkeeper: adminUser._id }).lean();
+  let appSettings = await AppSettings.findOne().lean();
+  if (!appSettings) {
+    appSettings = await AppSettings.create({});
   }
 
   let primaryHsl = "";

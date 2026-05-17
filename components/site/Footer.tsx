@@ -1,15 +1,13 @@
 import { Store, Facebook, Instagram, Twitter, Mail, Phone, MapPin } from "lucide-react";
 import Link from "next/link";
 import dbConnect from "@/lib/mongodb";
-import ShopSettings from "@/models/ShopSettings";
-import User from "@/models/User";
+import AppSettings from "@/models/AppSettings";
 
 export async function Footer() {
   await dbConnect();
-  const adminUser = await User.findOne({ role: "admin" });
-  let settings = null;
-  if (adminUser) {
-    settings = await ShopSettings.findOne({ shopkeeper: adminUser._id }).lean();
+  let settings = await AppSettings.findOne().lean();
+  if (!settings) {
+    settings = await AppSettings.create({});
   }
 
   return (
