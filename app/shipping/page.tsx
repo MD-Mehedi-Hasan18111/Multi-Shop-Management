@@ -11,22 +11,22 @@ export default function ShippingPage() {
     {
       icon: Truck,
       title: "Free Standard Shipping",
-      desc: "Free shipping on all orders over $50. Standard delivery takes 5-7 business days.",
+      desc: "Free shipping on all orders over ৳5000. Standard delivery takes 2-3 business days.",
     },
     {
       icon: Clock,
       title: "Express Shipping",
-      desc: "Need it faster? Express shipping delivers in 2-3 business days for a flat $9.99 fee.",
+      desc: "Need it faster? Express delivery within Chattogram delivers in 1-2 business days for a flat ৳100 fee.",
     },
     {
       icon: Globe,
-      title: "International Shipping",
-      desc: "We ship worldwide! International orders typically arrive within 10-15 business days.",
+      title: "National Shipping",
+      desc: "We ship nationwide! National orders typically arrive within 3-7 business days.",
     },
     {
       icon: Package,
       title: "Order Tracking",
-      desc: "Every order comes with a tracking number. Monitor your delivery in real-time from your account.",
+      desc: "Every order comes with a tracking link. Monitor your delivery in real-time from your account.",
     },
   ];
 
@@ -56,15 +56,15 @@ export default function ShippingPage() {
       <div className="prose dark:prose-invert max-w-none space-y-6">
         <h2 className="text-2xl font-bold">Processing Time</h2>
         <p className="text-muted-foreground">
-          Orders are processed within 1-2 business days. You will receive a confirmation email 
-          with tracking details once your order has shipped. During peak seasons, processing 
+          Orders are processed within 1-2 business days. You will receive a confirmation email
+          with tracking details once your order has shipped. During peak seasons, processing
           may take an additional day.
         </p>
 
         <h2 className="text-2xl font-bold">Delivery Issues</h2>
         <p className="text-muted-foreground">
-          If your package has not arrived within the expected timeframe, please contact our 
-          support team at support@shopmanager.com. We will investigate and resolve the issue promptly.
+          If your package has not arrived within the expected timeframe, please contact our
+          support team at mdmehedihasan18111@gmail.com. We will investigate and resolve the issue.
         </p>
       </div>
     </div>

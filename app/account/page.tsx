@@ -15,6 +15,8 @@ export default function AccountPage() {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [shopBlocked, setShopBlocked] = useState(false);
+  const [hasFetchedSettings, setHasFetchedSettings] = useState(false);
+  const [hasCheckedRoleSync, setHasCheckedRoleSync] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -23,7 +25,8 @@ export default function AccountPage() {
   }, [status, router]);
 
   useEffect(() => {
-    if (session && (session.user as any)?.role === "shopkeeper") {
+    if (session && (session.user as any)?.role === "shopkeeper" && !hasFetchedSettings) {
+      setHasFetchedSettings(true);
       fetch("/api/shopkeeper/settings")
         .then((res) => res.json())
         .then((data) => {
@@ -33,7 +36,23 @@ export default function AccountPage() {
         })
         .catch((err) => console.error("Error fetching shop settings:", err));
     }
-  }, [session]);
+  }, [session, hasFetchedSettings]);
+
+  useEffect(() => {
+    if (session && (session.user as any)?.role === "customer" && !hasCheckedRoleSync) {
+      setHasCheckedRoleSync(true);
+      fetch("/api/user/become-seller")
+        .then((res) => {
+          if (res.ok) return res.json();
+        })
+        .then((data) => {
+          if (data && data.role === "shopkeeper") {
+            update({ role: "shopkeeper" });
+          }
+        })
+        .catch((err) => console.error("Error checking role sync:", err));
+    }
+  }, [session, update, hasCheckedRoleSync]);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -95,11 +114,32 @@ export default function AccountPage() {
     { name: "Addresses", href: "/account/addresses", icon: MapPin, desc: "Manage shipping addresses" },
   ];
 
+  if ((session.user as any)?.role === "customer") {
+    menuItems.push({
+      name: "Become a Seller",
+      href: "/become-seller",
+      icon: Store,
+      desc: "Apply to create a storefront and sell products on our platform",
+    });
+  }
+
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl space-y-8">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-black tracking-tight">My Account</h1>
-        <p className="text-muted-foreground">Manage your profile and preferences</p>
+      <div className="flex justify-between items-start flex-wrap gap-4">
+        <div className="space-y-2">
+          <h1 className="text-4xl font-black tracking-tight">My Account</h1>
+          <p className="text-muted-foreground">Manage your profile and preferences</p>
+        </div>
+        <Button
+          onClick={() => {
+            setHasFetchedSettings(false);
+            setHasCheckedRoleSync(false);
+          }}
+          variant="outline"
+          className="rounded-2xl font-bold text-xs border-zinc-200 hover:bg-zinc-50 shadow-sm shrink-0"
+        >
+          Refresh Account
+        </Button>
       </div>
 
       {/* Profile Card */}
@@ -133,7 +173,7 @@ export default function AccountPage() {
               <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
                 <div className="bg-white/20 px-3 py-1 rounded-full flex items-center gap-2">
                   <ShieldCheck className="h-4 w-4" />
-                  <span className="text-xs uppercase tracking-wider font-bold">{(session.user as any)?.role || "customer"}</span>
+                  <span className="text-xs uppercase tracking-wider font-bold">{(session.user as any)?.role === 'shopkeeper' ? "Seller" : (session.user as any)?.role === 'admin' ? "Admin" : "customer"}</span>
                 </div>
               </div>
             </div>
@@ -152,7 +192,7 @@ export default function AccountPage() {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-bold text-lg text-zinc-500">Shopkeeper Panel</p>
+                    <p className="font-bold text-lg text-zinc-500">Seller Panel</p>
                     <span className="bg-red-600 text-white text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full">
                       Disabled
                     </span>
@@ -170,7 +210,7 @@ export default function AccountPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-bold text-lg">
-                    {(session.user as any)?.role === "admin" ? "Admin Panel" : "Shopkeeper Panel"}
+                    {(session.user as any)?.role === "admin" ? "Admin Panel" : "Seller Panel"}
                   </p>
                   <p className="text-sm text-muted-foreground">Go to your management dashboard</p>
                 </div>

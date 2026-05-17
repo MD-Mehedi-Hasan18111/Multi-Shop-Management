@@ -58,7 +58,7 @@ export async function Footer() {
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li><Link href="/account/orders" className="hover:text-primary">Order Tracking</Link></li>
               <li><Link href="/shipping" className="hover:text-primary">Shipping Policy</Link></li>
-              <li><Link href="/returns" className="hover:text-primary">Returns & Refunds</Link></li>
+              {/* <li><Link href="/returns" className="hover:text-primary">Returns & Refunds</Link></li> */}
               <li><Link href="/faq" className="hover:text-primary">FAQs</Link></li>
             </ul>
           </div>
@@ -68,22 +68,22 @@ export async function Footer() {
             <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 shrink-0 text-zinc-400" />
-                <span>{settings?.contactInfo?.address || "123 Commerce St, Digital City"}</span>
+                <span>{settings?.contactInfo?.address || "Block - A, Road - 1, Halishahar, Chattogram"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="h-4 w-4 shrink-0 text-zinc-400" />
-                <span>{settings?.contactInfo?.phone || "+1 (555) 000-1234"}</span>
+                <span>{settings?.contactInfo?.phone || "+88 01607-996992"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Mail className="h-4 w-4 shrink-0 text-zinc-400" />
-                <span>{settings?.contactInfo?.email || "support@shopmanager.com"}</span>
+                <span>{settings?.contactInfo?.email || "mdmehedihasan18111@gmail.com"}</span>
               </div>
             </div>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} {settings?.shopName || "ShopManager"}. All rights reserved.
+          © {new Date().getFullYear()} {settings?.shopName || "Shoppy"}. All rights reserved.
         </div>
       </div>
     </footer>

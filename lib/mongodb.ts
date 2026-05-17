@@ -11,6 +11,7 @@ import "@/models/Review";
 import "@/models/Notification";
 import "@/models/Wishlist";
 import "@/models/ShopSettings";
+import "@/models/SellerRequest";
 
 
 declare global {

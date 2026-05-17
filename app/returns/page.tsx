@@ -8,9 +8,9 @@ export const metadata: Metadata = {
 
 export default function ReturnsPage() {
   const steps = [
-    { icon: RotateCcw, title: "Initiate Return", desc: "Contact us within 30 days of receiving your order to start a return." },
-    { icon: Clock, title: "Ship Back", desc: "Pack the item securely and ship it back using the prepaid label we provide." },
-    { icon: CheckCircle, title: "Get Refunded", desc: "Once we receive and inspect the item, your refund is processed within 5-7 business days." },
+    { icon: RotateCcw, title: "Initiate Return", desc: "Contact us within 2 days of receiving your order to start a return." },
+    { icon: Clock, title: "Return Item", desc: "Return the item within 5 days of contacting us." },
+    { icon: CheckCircle, title: "Get Refunded", desc: "Once we receive and inspect the item, your refund is processed within 2-3 business days." },
   ];
 
   return (
@@ -18,7 +18,7 @@ export default function ReturnsPage() {
       <div className="text-center space-y-4">
         <h1 className="text-5xl font-black tracking-tight">Returns & Refunds</h1>
         <p className="text-xl text-muted-foreground max-w-xl mx-auto">
-          Hassle-free returns within 30 days of purchase.
+          Hassle-free returns within 7 days of delivery.
         </p>
       </div>
 
@@ -54,7 +54,7 @@ export default function ReturnsPage() {
 
         <h2 className="text-2xl font-bold">Exchanges</h2>
         <p className="text-muted-foreground">
-          We only replace items if they are defective or damaged. If you need to exchange an item 
+          We only replace items if they are defective or damaged. If you need to exchange an item
           for the same product, contact us at support@shopmanager.com.
         </p>
       </div>

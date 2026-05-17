@@ -75,6 +75,22 @@ export default function UsersPage() {
     }
   }
 
+  async function deleteUser(user: any) {
+    if (!confirm(`Are you sure you want to permanently delete the user account for "${user.name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    const res = await fetch(`/api/admin/users?userId=${user._id}`, {
+      method: "DELETE",
+    });
+
+    if (res.ok) {
+      setUsers((current) => current.filter((item) => item._id !== user._id));
+    } else {
+      alert((await res.json()).error || "Failed to delete user");
+    }
+  }
+
   return (
     <div className="grid gap-4 md:gap-8">
       <div>
@@ -145,6 +161,14 @@ export default function UsersPage() {
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="sm" onClick={() => toggleUser(user)}>
                         {user.isActive === false ? "Activate" : "Deactivate"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-destructive hover:bg-destructive/10"
+                        onClick={() => deleteUser(user)}
+                      >
+                        Delete
                       </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

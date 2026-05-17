@@ -36,7 +36,7 @@ export default function ShopkeeperDashboard() {
         setLoading(false);
       }
     };
-    
+
     const fetchShop = async () => {
       try {
         const res = await fetch("/api/shopkeeper/settings");
@@ -121,7 +121,7 @@ export default function ShopkeeperDashboard() {
       {/* Header & Global Actions */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight italic uppercase">Store Analytics</h1>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight italic uppercase">Seller Analytics</h1>
           <p className="text-zinc-500 font-medium text-sm sm:text-base">Monitoring your performance from {startDate} to {endDate}</p>
         </div>
 

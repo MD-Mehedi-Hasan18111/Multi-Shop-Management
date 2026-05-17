@@ -87,3 +87,43 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user.role !== "admin") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
+
+    if (userId === session.user.id) {
+      return NextResponse.json({ error: "You cannot delete your own admin account" }, { status: 400 });
+    }
+
+    await dbConnect();
+    const user = await User.findById(userId);
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Delete User record
+    await User.findByIdAndDelete(userId);
+
+    // Clean up relational details dynamically
+    const SellerRequest = (await import("@/models/SellerRequest")).default;
+    const ShopSettings = (await import("@/models/ShopSettings")).default;
+    await SellerRequest.deleteMany({ user: userId });
+    await ShopSettings.deleteMany({ shopkeeper: userId });
+
+    return NextResponse.json({ message: "User deleted successfully" });
+  } catch (error: any) {
+    console.error("Delete User Error:", error);
+    return NextResponse.json({ error: error.message || "Failed to delete user" }, { status: 500 });
+  }
+}

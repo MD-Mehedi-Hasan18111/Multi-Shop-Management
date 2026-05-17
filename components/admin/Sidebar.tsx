@@ -12,11 +12,13 @@ import {
   BarChart3,
   Store,
   Tags,
+  UserCheck,
 } from "lucide-react";
 
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Shops", href: "/admin/shops", icon: Store },
+  { name: "Seller Requests", href: "/admin/seller-requests", icon: UserCheck },
   { name: "Categories", href: "/admin/categories", icon: Tags },
   { name: "Products", href: "/admin/products", icon: Package },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },

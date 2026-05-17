@@ -59,9 +59,9 @@ export default function ContactPage() {
           <h2 className="text-2xl font-bold">Get in Touch</h2>
           <div className="space-y-4">
             {[
-              { icon: Mail, title: "Email", value: "support@shopmanager.com" },
-              { icon: Phone, title: "Phone", value: "+1 (555) 000-1234" },
-              { icon: MapPin, title: "Address", value: "123 Commerce St, Digital City, DC 10001" },
+              { icon: Mail, title: "Email", value: "mdmehedihasan18111@gmail.com" },
+              { icon: Phone, title: "Phone", value: "+8801856943601" },
+              { icon: MapPin, title: "Address", value: "Block - A, Road - 1, Halishahar, Chattogram" },
             ].map((item) => (
               <div key={item.title} className="flex items-start gap-4 p-5 rounded-2xl bg-muted/50 border">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
