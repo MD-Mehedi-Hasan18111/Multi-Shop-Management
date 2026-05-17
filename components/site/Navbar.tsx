@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShoppingCart, User, Search, Menu, Store, Heart, Bell } from "lucide-react";
@@ -34,6 +35,16 @@ export function Navbar() {
   const wishlistItems = useSelector((state: RootState) => state.wishlist.items);
   const wishlistCount = wishlistItems.length;
   const { data: session } = useSession();
+  const [settings, setSettings] = useState<any>(null);
+
+  useEffect(() => {
+    fetch("/api/admin/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.error) setSettings(data);
+      })
+      .catch((err) => console.error("Error loading navbar settings:", err));
+  }, []);
 
   // Hide navbar on admin and shopkeeper routes
   if (pathname.startsWith("/admin") || pathname.startsWith("/shopkeeper")) {
@@ -45,8 +56,14 @@ export function Navbar() {
       <div className="container mx-auto flex h-16 items-center justify-between px-2 sm:px-4">
         <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
           <Link href="/" className="flex items-center gap-2 font-black text-xl sm:text-2xl tracking-tighter italic uppercase">
-            <Store className="h-6 w-6 sm:h-8 sm:h-8 text-primary" />
-            <span className="hidden lg:inline">ShopManager</span>
+            {settings?.logo ? (
+              <div className="w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-zinc-100 dark:border-zinc-800">
+                <img src={settings.logo} alt="Logo" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <Store className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
+            )}
+            <span className="hidden lg:inline">{settings?.shopName || "ShopManager"}</span>
           </Link>
           <div className="hidden md:flex gap-4 lg:gap-8 text-[10px] lg:text-xs font-bold uppercase tracking-widest h-16 items-center">
             {navLinks.map((link) => {

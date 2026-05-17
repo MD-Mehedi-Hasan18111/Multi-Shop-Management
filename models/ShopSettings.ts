@@ -53,6 +53,32 @@ const ShopSettingsSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    homepage: {
+      heroTitle: { type: String, default: "" },
+      heroDescription: { type: String, default: "" },
+      heroBtnText: { type: String, default: "" },
+      heroBtnLink: { type: String, default: "" },
+      promoTitle: { type: String, default: "" },
+      promoDescription: { type: String, default: "" },
+      promoDiscount: { type: String, default: "" },
+      promoBtnText: { type: String, default: "" },
+      promoBtnLink: { type: String, default: "" },
+      promoBannerImage: { type: String, default: "" },
+      features: {
+        type: [
+          {
+            title: String,
+            icon: String,
+            description: String,
+          }
+        ],
+        default: [
+          { title: "Free Shipping", icon: "Truck", description: "On all orders over BDT 1000" },
+          { title: "24/7 Support", icon: "Clock", description: "Dedicated customer service" },
+          { title: "Secure Payment", icon: "Shield", description: "100% secure payment gateway" }
+        ]
+      }
+    }
   },
   {
     timestamps: true,
